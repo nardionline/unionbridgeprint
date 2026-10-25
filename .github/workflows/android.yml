@@ -20,6 +20,8 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: ""
 
       # Pass each SDK package as a separate shell argument; commas are not valid separators here.
       - name: Install Android SDK packages
