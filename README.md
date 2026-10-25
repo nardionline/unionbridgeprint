@@ -81,3 +81,6 @@ The website must build the JSON payload, encode it as URL-safe Base64, then navi
 
 ## Label test profile v0.1.1
 The test-label button prints `Trapano 750W Professional con percussione e valigetta`, SKU `TR-10025`, price `4,990 L`, and Code 128 data `123456789012`. Layout coordinates are an initial 203-dpi/8-dot-per-mm assumption and must be physically checked; adjust after seeing the real label output.
+
+## Build workflow fix
+The GitHub Actions workflow explicitly installs `platform-tools`, Android platform 35, and build-tools 35.0.0. This avoids the deprecated `tools` SDK package that caused `Failed to find package 'tools'` in the previous run.
