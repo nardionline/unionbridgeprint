@@ -18,11 +18,12 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      # Explicit package list avoids the deprecated SDK package named "tools".
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          packages: "platform-tools, platforms;android-35, build-tools;35.0.0"
+
+      # Pass each SDK package as a separate shell argument; commas are not valid separators here.
+      - name: Install Android SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

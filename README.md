@@ -84,3 +84,6 @@ The test-label button prints `Trapano 750W Professional con percussione e valige
 
 ## Build workflow fix
 The GitHub Actions workflow explicitly installs `platform-tools`, Android platform 35, and build-tools 35.0.0. This avoids the deprecated `tools` SDK package that caused `Failed to find package 'tools'` in the previous run.
+
+## Build workflow fix v2
+The SDK packages are installed using a dedicated `sdkmanager` command with each package passed as a separate quoted argument. Do not place comma-separated packages in the setup-android `packages` input.
