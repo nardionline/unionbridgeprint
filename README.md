@@ -96,3 +96,10 @@ Version 0.1.2: fixed TSPL command line endings so each TEXT/BAR/BARCODE command 
 - Centers the product title lines and barcode block for 40 x 30 mm labels.
 - Uses a larger TSPL font for the price.
 - Physical validation is still required on the target 4B-2044PA printer.
+
+## v0.1.4 label layout update
+- Uses smaller centered title text with up to two wider lines to reduce clipping.
+- Keeps the price large and right-aligned.
+- Moves the SKU to its own line below the price, inset from the left edge.
+- Reduces Code 128 barcode height while keeping the human-readable digits below it.
+- Test physically on the 4B-2044PA printer; exact output depends on printer DPI and firmware.
