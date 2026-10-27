@@ -20,8 +20,8 @@ object CommandBuilders {
         val price = clean(label.price).take(16)
         val barcode = clean(label.barcode).filter { it.isLetterOrDigit() || it in "-._/" }.take(32)
 
-        // Dot positions below are designed for 40 x 30 mm at 203 dpi.
-        // If a different label size is requested, keep the layout inside safe margins.
+        // Centered layout for 40 x 30 mm at 203 dpi (approximately 8 dots/mm).
+        // Keep the full product title on up to two centered lines and emphasize the price.
         val b = StringBuilder()
         b.append("SIZE ${w} mm,${h} mm\r\n")
         b.append("GAP 2 mm,0 mm\r\n")
@@ -29,23 +29,31 @@ object CommandBuilders {
         b.append("REFERENCE 0,0\r\n")
         b.append("CLS\r\n")
 
-        // Product title is fitted into two compact lines. Use supplied explicit line break if present;
-        // otherwise split at the nearest space around the midpoint, preserving the complete name.
-        val titleLines = splitTitle(name, 28)
-        val titleFont = "2"
-        b.append("TEXT 12,8,\"$titleFont\",0,1,1,\"${clean(titleLines.first)}\"\r\n")
-        if (titleLines.second.isNotBlank()) {
-            b.append("TEXT 12,32,\"$titleFont\",0,1,1,\"${clean(titleLines.second)}\"\r\n")
+        // Font 2 is approximately 12 dots wide per character. Limit each line to 24 chars.
+        val titleLines = splitTitle(name, 24)
+        fun centeredX(text: String, charWidth: Int, minX: Int = 4): Int {
+            return (((320 - text.length * charWidth) / 2).coerceAtLeast(minX))
         }
-        // Thin divider below the title.
-        b.append("BAR 12,57,296,1\r\n")
-        // Small product code on left and moderately sized price on right.
-        if (sku.isNotBlank()) b.append("TEXT 12,65,\"1\",0,1,1,\"$sku\"\r\n")
-        if (price.isNotBlank()) b.append("TEXT 174,63,\"3\",0,1,1,\"$price\"\r\n")
-        // Code 128 barcode; human-readable value printed separately in small text below.
+        val line1 = titleLines.first
+        val line2 = titleLines.second
+        if (line1.isNotBlank()) {
+            b.append("TEXT ${centeredX(line1, 12)},6,\"2\",0,1,1,\"${clean(line1)}\"\r\n")
+        }
+        if (line2.isNotBlank()) {
+            b.append("TEXT ${centeredX(line2, 12)},29,\"2\",0,1,1,\"${clean(line2)}\"\r\n")
+        }
+        // Thin divider, nearly full width.
+        b.append("BAR 12,53,296,1\r\n")
+        // SKU remains small and left aligned; price is larger and centered on the label.
+        if (sku.isNotBlank()) b.append("TEXT 12,61,\"1\",0,1,1,\"$sku\"\r\n")
+        if (price.isNotBlank()) {
+            // Font 4 is substantially larger than the previous font 3.
+            b.append("TEXT ${centeredX(price, 17)},57,\"4\",0,1,1,\"$price\"\r\n")
+        }
+        // Center the barcode block and its human-readable value.
         if (barcode.isNotBlank()) {
-            b.append("BARCODE 12,91,\"128\",75,0,0,2,4,\"$barcode\"\r\n")
-            b.append("TEXT 100,169,\"1\",0,1,1,\"$barcode\"\r\n")
+            b.append("BARCODE 54,96,\"128\",64,0,0,2,3,\"$barcode\"\r\n")
+            b.append("TEXT ${centeredX(barcode, 7)},166,\"1\",0,1,1,\"$barcode\"\r\n")
         }
         b.append("PRINT ${copies.coerceIn(1,100)},1\r\n")
         return b.toString().toByteArray(Charsets.US_ASCII)

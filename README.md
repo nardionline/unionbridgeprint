@@ -90,3 +90,9 @@ The SDK packages are installed using a dedicated `sdkmanager` command with each 
 
 
 Version 0.1.2: fixed TSPL command line endings so each TEXT/BAR/BARCODE command is terminated with actual CRLF bytes. Physical printer test is still required.
+
+
+## v0.1.3 label layout update
+- Centers the product title lines and barcode block for 40 x 30 mm labels.
+- Uses a larger TSPL font for the price.
+- Physical validation is still required on the target 4B-2044PA printer.
