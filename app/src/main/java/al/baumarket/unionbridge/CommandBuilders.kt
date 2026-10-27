@@ -18,7 +18,8 @@ object CommandBuilders {
         val company = clean(label.company).take(24)
         val name = clean(label.name)
         val sku = clean(label.sku).take(24)
-        val price = clean(label.price).take(16)
+        val rawPrice = clean(label.price).take(16)
+        val price = if (rawPrice.isNotBlank() && !rawPrice.endsWith(" L", ignoreCase = true) && !rawPrice.endsWith("L", ignoreCase = true)) "$rawPrice L" else rawPrice
         val barcode = clean(label.barcode).filter { it.isLetterOrDigit() || it in "-._/" }.take(32)
 
         // Centered layout for 40 x 30 mm at 203 dpi (approximately 8 dots/mm).
@@ -31,30 +32,30 @@ object CommandBuilders {
         b.append("CLS\r\n")
 
         // Font 1 is smaller than font 2; split into two wider lines to avoid right-edge clipping.
-        val titleLines = splitTitle(name, 36)
+        val titleLines = splitTitle(name, 29)
         fun centeredX(text: String, charWidth: Int, minX: Int = 4): Int {
             return (((320 - text.length * charWidth) / 2).coerceAtLeast(minX))
         }
         val line1 = titleLines.first
         val line2 = titleLines.second
         if (line1.isNotBlank()) {
-            b.append("TEXT ${centeredX(line1, 8)},5,\"1\",0,1,1,\"${clean(line1)}\"\r\n")
+            b.append("TEXT ${centeredX(line1, 10)},5,\"2\",0,1,1,\"${clean(line1)}\"\r\n")
         }
         if (line2.isNotBlank()) {
-            b.append("TEXT ${centeredX(line2, 8)},22,\"1\",0,1,1,\"${clean(line2)}\"\r\n")
+            b.append("TEXT ${centeredX(line2, 10)},25,\"2\",0,1,1,\"${clean(line2)}\"\r\n")
         }
         // Thin divider below the title.
-        b.append("BAR 12,42,296,1\r\n")
+        b.append("BAR 12,46,296,1\r\n")
         // Large price right-aligned. SKU sits on the next line, inset from the left edge.
         if (price.isNotBlank()) {
-            val priceX = (308 - price.length * 17).coerceAtLeast(70)
-            b.append("TEXT $priceX,47,\"4\",0,1,1,\"$price\"\r\n")
+            val priceX = (286 - price.length * 16).coerceAtLeast(48)
+            b.append("TEXT $priceX,50,\"4\",0,1,1,\"$price\"\r\n")
         }
-        if (sku.isNotBlank()) b.append("TEXT 58,82,\"1\",0,1,1,\"$sku\"\r\n")
+        if (sku.isNotBlank()) b.append("TEXT 72,91,\"2\",0,1,1,\"$sku\"\r\n")
         // Shorter barcode to leave more whitespace and keep the label compact.
         if (barcode.isNotBlank()) {
-            b.append("BARCODE 54,111,\"128\",48,0,0,2,3,\"$barcode\"\r\n")
-            b.append("TEXT ${centeredX(barcode, 7)},164,\"1\",0,1,1,\"$barcode\"\r\n")
+            b.append("BARCODE 54,119,\"128\",42,0,0,2,3,\"$barcode\"\r\n")
+            b.append("TEXT ${centeredX(barcode, 7)},166,\"1\",0,1,1,\"$barcode\"\r\n")
         }
         b.append("PRINT ${copies.coerceIn(1,100)},1\r\n")
         return b.toString().toByteArray(Charsets.US_ASCII)
