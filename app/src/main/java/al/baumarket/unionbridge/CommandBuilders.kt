@@ -32,7 +32,7 @@ object CommandBuilders {
         b.append("CLS\r\n")
 
         // Font 1 is smaller than font 2; split into two wider lines to avoid right-edge clipping.
-        val titleLines = splitTitle(name, 25)
+        val titleLines = splitTitle(name, 20)
         fun centeredX(text: String, charWidth: Int, minX: Int = 16): Int {
             // Use a safe 16-dot margin on both sides of the 320-dot label.
             return (((320 - text.length * charWidth) / 2).coerceIn(minX, 320 - minX - text.length * charWidth))
@@ -50,9 +50,9 @@ object CommandBuilders {
         // Large price right-aligned. SKU sits on the next line, inset from the left edge.
         if (price.isNotBlank()) {
             val priceCharWidth = 16
-            val priceRightEdge = 296 // reserve 24 dots on the right to prevent clipping of the final L
-            val priceX = (priceRightEdge - price.length * priceCharWidth).coerceAtLeast(24)
-            b.append("TEXT $priceX,57,\"4\",0,1,1,\"$price\"\r\n")
+            val priceRightEdge = 264 // larger safe right margin so the final L remains inside printable area
+            val priceX = (priceRightEdge - price.length * priceCharWidth).coerceAtLeast(20)
+            b.append("TEXT $priceX,64,\"4\",0,1,1,\"$price\"\r\n")
         }
         if (sku.isNotBlank()) b.append("TEXT 88,98,\"2\",0,1,1,\"$sku\"\r\n")
         // Shorter barcode to leave more whitespace and keep the label compact.

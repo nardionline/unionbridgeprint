@@ -1,3 +1,5 @@
+Union Bridge v0.1.7 — title margins and price positioning correction
+
 # Union Bridge Android — v0.1.1 (label test)
 
 Independent Android Bluetooth print bridge for Unionline.
