@@ -65,11 +65,30 @@ object CommandBuilders {
     }
 
     private fun splitTitle(value: String, targetChars: Int): Pair<String, String> {
-        val normalized = value.replace("\r", " ").replace("\n", " ").trim().replace(Regex("\\s+"), " ")
-        if (normalized.length <= targetChars) return normalized to ""
-        val splitAt = normalized.lastIndexOf(' ', targetChars.coerceAtMost(normalized.length - 1))
-            .takeIf { it > 0 } ?: targetChars.coerceAtMost(normalized.length - 1)
-        return normalized.substring(0, splitAt).trim() to normalized.substring(splitAt).trim()
+        // Limit both lines to the printable width. The old implementation put the entire
+        // remainder of a long name on line 2, making centeredX() coerce an invalid range
+        // and crashing the app when the test-label button was pressed.
+        val normalized = value.replace("\r", " ").replace("\n", " ").trim()
+            .replace(Regex("\\s+"), " ")
+        if (normalized.isEmpty()) return "" to ""
+        val words = normalized.split(' ')
+        val first = StringBuilder()
+        val second = StringBuilder()
+        var current = first
+        for (word in words) {
+            if (current.isEmpty()) {
+                current.append(word.take(targetChars))
+            } else if (current.length + 1 + word.length <= targetChars) {
+                current.append(' ').append(word)
+            } else if (current === first && second.isEmpty()) {
+                current = second
+                current.append(word.take(targetChars))
+            } else {
+                // Two lines maximum; ignore overflow to keep every coordinate within bounds.
+                break
+            }
+        }
+        return first.toString() to second.toString()
     }
 
     fun escPos(receipt: ReceiptPayload, copies: Int): ByteArray {

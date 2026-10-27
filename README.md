@@ -111,3 +111,8 @@ Version 0.1.2: fixed TSPL command line endings so each TEXT/BAR/BARCODE command 
 - Narrowed product title wrapping and added safe left/right margins.
 - Moved price slightly lower and reserved extra right-side space so the trailing currency letter is less likely to clip.
 - Moved SKU slightly lower/right and reduced barcode height slightly.
+
+
+## v0.1.8 crash fix
+- Fixed a crash when testing labels with long product names by limiting both title lines to the printable width before centering.
+- Kept the Bluetooth SPP print flow and barcode layout unchanged.
