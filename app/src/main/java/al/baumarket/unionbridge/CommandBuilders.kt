@@ -32,9 +32,10 @@ object CommandBuilders {
         b.append("CLS\r\n")
 
         // Font 1 is smaller than font 2; split into two wider lines to avoid right-edge clipping.
-        val titleLines = splitTitle(name, 29)
-        fun centeredX(text: String, charWidth: Int, minX: Int = 4): Int {
-            return (((320 - text.length * charWidth) / 2).coerceAtLeast(minX))
+        val titleLines = splitTitle(name, 25)
+        fun centeredX(text: String, charWidth: Int, minX: Int = 16): Int {
+            // Use a safe 16-dot margin on both sides of the 320-dot label.
+            return (((320 - text.length * charWidth) / 2).coerceIn(minX, 320 - minX - text.length * charWidth))
         }
         val line1 = titleLines.first
         val line2 = titleLines.second
@@ -45,16 +46,18 @@ object CommandBuilders {
             b.append("TEXT ${centeredX(line2, 10)},25,\"2\",0,1,1,\"${clean(line2)}\"\r\n")
         }
         // Thin divider below the title.
-        b.append("BAR 12,46,296,1\r\n")
+        b.append("BAR 16,48,288,1\r\n")
         // Large price right-aligned. SKU sits on the next line, inset from the left edge.
         if (price.isNotBlank()) {
-            val priceX = (286 - price.length * 16).coerceAtLeast(48)
-            b.append("TEXT $priceX,50,\"4\",0,1,1,\"$price\"\r\n")
+            val priceCharWidth = 16
+            val priceRightEdge = 296 // reserve 24 dots on the right to prevent clipping of the final L
+            val priceX = (priceRightEdge - price.length * priceCharWidth).coerceAtLeast(24)
+            b.append("TEXT $priceX,57,\"4\",0,1,1,\"$price\"\r\n")
         }
-        if (sku.isNotBlank()) b.append("TEXT 72,91,\"2\",0,1,1,\"$sku\"\r\n")
+        if (sku.isNotBlank()) b.append("TEXT 88,98,\"2\",0,1,1,\"$sku\"\r\n")
         // Shorter barcode to leave more whitespace and keep the label compact.
         if (barcode.isNotBlank()) {
-            b.append("BARCODE 54,119,\"128\",42,0,0,2,3,\"$barcode\"\r\n")
+            b.append("BARCODE 54,123,\"128\",38,0,0,2,3,\"$barcode\"\r\n")
             b.append("TEXT ${centeredX(barcode, 7)},166,\"1\",0,1,1,\"$barcode\"\r\n")
         }
         b.append("PRINT ${copies.coerceIn(1,100)},1\r\n")

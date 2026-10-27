@@ -103,3 +103,9 @@ Version 0.1.2: fixed TSPL command line endings so each TEXT/BAR/BARCODE command 
 - Moves the SKU to its own line below the price, inset from the left edge.
 - Reduces Code 128 barcode height while keeping the human-readable digits below it.
 - Test physically on the 4B-2044PA printer; exact output depends on printer DPI and firmware.
+
+
+## v0.1.6 label adjustment
+- Narrowed product title wrapping and added safe left/right margins.
+- Moved price slightly lower and reserved extra right-side space so the trailing currency letter is less likely to clip.
+- Moved SKU slightly lower/right and reduced barcode height slightly.
