@@ -87,3 +87,6 @@ The GitHub Actions workflow explicitly installs `platform-tools`, Android platfo
 
 ## Build workflow fix v2
 The SDK packages are installed using a dedicated `sdkmanager` command with each package passed as a separate quoted argument. Do not place comma-separated packages in the setup-android `packages` input.
+
+
+Version 0.1.2: fixed TSPL command line endings so each TEXT/BAR/BARCODE command is terminated with actual CRLF bytes. Physical printer test is still required.

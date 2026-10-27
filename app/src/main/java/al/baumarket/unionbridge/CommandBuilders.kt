@@ -33,19 +33,19 @@ object CommandBuilders {
         // otherwise split at the nearest space around the midpoint, preserving the complete name.
         val titleLines = splitTitle(name, 28)
         val titleFont = "2"
-        b.append("TEXT 12,8,\"$titleFont\",0,1,1,\"${clean(titleLines.first)}\"\\r\\n")
+        b.append("TEXT 12,8,\"$titleFont\",0,1,1,\"${clean(titleLines.first)}\"\r\n")
         if (titleLines.second.isNotBlank()) {
-            b.append("TEXT 12,32,\"$titleFont\",0,1,1,\"${clean(titleLines.second)}\"\\r\\n")
+            b.append("TEXT 12,32,\"$titleFont\",0,1,1,\"${clean(titleLines.second)}\"\r\n")
         }
         // Thin divider below the title.
-        b.append("BAR 12,57,296,1\\r\\n")
+        b.append("BAR 12,57,296,1\r\n")
         // Small product code on left and moderately sized price on right.
-        if (sku.isNotBlank()) b.append("TEXT 12,65,\"1\",0,1,1,\"$sku\"\\r\\n")
-        if (price.isNotBlank()) b.append("TEXT 174,63,\"3\",0,1,1,\"$price\"\\r\\n")
+        if (sku.isNotBlank()) b.append("TEXT 12,65,\"1\",0,1,1,\"$sku\"\r\n")
+        if (price.isNotBlank()) b.append("TEXT 174,63,\"3\",0,1,1,\"$price\"\r\n")
         // Code 128 barcode; human-readable value printed separately in small text below.
         if (barcode.isNotBlank()) {
-            b.append("BARCODE 12,91,\"128\",75,0,0,2,4,\"$barcode\"\\r\\n")
-            b.append("TEXT 100,169,\"1\",0,1,1,\"$barcode\"\\r\\n")
+            b.append("BARCODE 12,91,\"128\",75,0,0,2,4,\"$barcode\"\r\n")
+            b.append("TEXT 100,169,\"1\",0,1,1,\"$barcode\"\r\n")
         }
         b.append("PRINT ${copies.coerceIn(1,100)},1\r\n")
         return b.toString().toByteArray(Charsets.US_ASCII)
