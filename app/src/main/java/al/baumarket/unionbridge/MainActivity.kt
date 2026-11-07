@@ -19,6 +19,7 @@ import android.widget.ScrollView
 import android.widget.Spinner
 import android.widget.TextView
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 
 class MainActivity : Activity() {
@@ -203,9 +204,17 @@ class MainActivity : Activity() {
                 showStatus("Nuk është zgjedhur printeri për këtë lloj dokumenti.")
                 return
             }
-            val data = if (payload.type == "label") CommandBuilders.tspl(payload.label!!, payload.copies)
-                       else CommandBuilders.escPos(payload.receipt!!, payload.copies)
-            printAsync(mac, data, if (payload.type == "label") "Etiketa" else "Fatura")
+            if (payload.type == "label") {
+                val out = ByteArrayOutputStream()
+                payload.labels.forEach { job ->
+                    out.write(CommandBuilders.tspl(job.label, job.copies))
+                }
+                val totalCopies = payload.labels.sumOf { it.copies }
+                printAsync(mac, out.toByteArray(), "${totalCopies} etiketa (${payload.labels.size} artikuj)")
+            } else {
+                val data = CommandBuilders.escPos(payload.receipt!!, 1)
+                printAsync(mac, data, "Fatura")
+            }
         } catch (e: Exception) {
             showStatus("Kërkesë printimi e pavlefshme: ${e.message}")
         }

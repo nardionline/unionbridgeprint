@@ -1,0 +1,11 @@
+Unionline Bridge Android v0.2.0
+
+- Added multi-label basket payload support from Unionline Web.
+- Reads the labels[] array and each item's copies quantity.
+- Sends all labels in basket order over one Bluetooth Classic SPP connection.
+- Preserved legacy single-label payload compatibility.
+- Preserved ESC/POS receipt payload support.
+- Resumes a pending deep-link print request after Bluetooth permission is granted.
+- Android versionCode: 2; versionName: 0.2.0.
+
+Physical printer testing is still required. TSPL/TSPL2 support and Bluetooth Classic SPP are required for the label printer.

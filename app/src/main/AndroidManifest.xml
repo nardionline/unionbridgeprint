@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <application
         android:allowBackup="false"
-        android:label="Union Bridge"
+        android:label="Unionline Bridge"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:usesCleartextTraffic="false">
         <activity

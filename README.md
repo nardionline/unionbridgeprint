@@ -122,3 +122,27 @@ Version 0.1.2: fixed TSPL command line endings so each TEXT/BAR/BARCODE command 
 - Product title left-aligned on up to two lines.
 - Price coordinates retained from v0.1.8.
 - SKU shifted left and slightly lower; barcode shifted slightly lower and shortened slightly.
+
+
+## Union Bridge v0.2.0 — multi-label basket support
+- Accepts the Unionline Web basket payload: `type: "label"` with a `labels` array.
+- Each label supports its own `copies` value (Unionline sends the basket quantity).
+- Builds all TSPL/TSPL2 label commands into one Bluetooth SPP print session, in basket order.
+- Keeps backward compatibility with the original single-label `label` payload.
+- Keeps ESC/POS receipt support unchanged.
+- If Bluetooth permission is requested while opening a print deep link, the pending print request is resumed after permission is granted.
+
+### Expected basket payload
+```json
+{
+  "type": "label",
+  "company": "Baumarket Vora",
+  "widthMm": 40,
+  "heightMm": 30,
+  "language": "tspl2",
+  "labels": [
+    {"name":"Produkt 1","sku":"SKU-1","price":"590 L","barcode":"1234567890","copies":2,"widthMm":40,"heightMm":30,"language":"tspl2"},
+    {"name":"Produkt 2","sku":"SKU-2","price":"500 L","barcode":"9876543210","copies":1,"widthMm":40,"heightMm":30,"language":"tspl2"}
+  ]
+}
+```
