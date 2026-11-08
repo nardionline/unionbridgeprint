@@ -49,67 +49,218 @@ class MainActivity : Activity() {
     }
 
     private fun buildUi() {
+        val pageBg = 0xFFF3F5F9.toInt()
+        val red = 0xFFBE1622.toInt()
+        val dark = 0xFF172033.toInt()
+        val muted = 0xFF667085.toInt()
+        val greenBg = 0xFFE5F6EB.toInt()
+        val green = 0xFF16803C.toInt()
+
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(28, 28, 28, 28)
-            setBackgroundColor(0xFFF5F7FA.toInt())
+            setBackgroundColor(pageBg)
         }
-        val scroll = ScrollView(this)
-        val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        val title = TextView(this).apply {
-            text = "Union Bridge"
-            textSize = 28f
-            setTextColor(0xFF182230.toInt())
-            setPadding(0, 0, 0, 8)
+
+        // Branded header
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(20), dp(24), dp(20), dp(24))
+            background = rounded(red, 0, 0, 0, 0)
         }
-        content.addView(title)
-        content.addView(TextView(this).apply {
-            text = "Bluetooth printing · TSPL / TSPL2 labels · ESC/POS receipts"
-            textSize = 14f
-            setTextColor(0xFF475467.toInt())
-            setPadding(0, 0, 0, 24)
+        val logo = TextView(this).apply {
+            text = "BV"
+            textSize = 25f
+            setTextColor(0xFFFFFFFF.toInt())
+            gravity = Gravity.CENTER
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            background = rounded(0x33FFFFFF, 18)
+            layoutParams = LinearLayout.LayoutParams(dp(58), dp(58)).apply { marginEnd = dp(14) }
+        }
+        header.addView(logo)
+        val brandText = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        brandText.addView(TextView(this).apply {
+            text = "Unionline Bridge"
+            textSize = 22f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(0xFFFFFFFF.toInt())
         })
-        content.addView(section("Printeri i etiketave"))
+        brandText.addView(TextView(this).apply {
+            text = "Bluetooth printing  ·  TSPL / TSPL2  ·  ESC/POS"
+            textSize = 12f
+            setTextColor(0xFFFFE7E9.toInt())
+            setPadding(0, dp(3), 0, 0)
+        })
+        header.addView(brandText, LinearLayout.LayoutParams(0, -2, 1f))
+        root.addView(header)
+
+        val scroll = ScrollView(this).apply { clipToPadding = false }
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(18), dp(16), dp(24))
+        }
+
+        // Live bridge status card
+        val statusCard = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(16), dp(14), dp(16), dp(14))
+            background = rounded(greenBg, 18)
+        }
+        val statusIcon = TextView(this).apply {
+            text = "✓"
+            textSize = 25f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(0xFFFFFFFF.toInt())
+            gravity = Gravity.CENTER
+            background = rounded(green, 50)
+            layoutParams = LinearLayout.LayoutParams(dp(46), dp(46)).apply { marginEnd = dp(14) }
+        }
+        statusCard.addView(statusIcon)
+        val statusTexts = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        statusTexts.addView(TextView(this).apply {
+            text = "Bridge Aktiv"
+            textSize = 18f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(dark)
+        })
+        status = TextView(this).apply {
+            text = "Gati për të pranuar printime nga Unionline"
+            textSize = 13f
+            setTextColor(0xFF344054.toInt())
+            setPadding(0, dp(3), 0, 0)
+        }
+        statusTexts.addView(status)
+        statusCard.addView(statusTexts, LinearLayout.LayoutParams(0, -2, 1f))
+        content.addView(statusCard, spacedParams(bottom = 16))
+
+        // Label printer card
+        content.addView(printerCard("▣", "Printeri i etiketave", 0xFFBE1622.toInt()), spacedParams(bottom = 0))
         labelSpinner = Spinner(this)
-        content.addView(labelSpinner)
-        content.addView(section("Printeri i faturave"))
+        content.addView(labelSpinner, spacedParams(bottom = 14, left = 14, right = 14))
+
+        content.addView(printerCard("▤", "Printeri i faturave", 0xFFBE1622.toInt()), spacedParams(bottom = 0))
         receiptSpinner = Spinner(this)
-        content.addView(receiptSpinner)
-        content.addView(button("Rifresko printerët Bluetooth") { refreshDevices() })
-        content.addView(button("Ruaj printerët e zgjedhur") {
+        content.addView(receiptSpinner, spacedParams(bottom = 16, left = 14, right = 14))
+
+        // Refresh and save actions in one row
+        val configRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        configRow.addView(actionButton("↻  Rifresko printerët", false) { refreshDevices() },
+            LinearLayout.LayoutParams(0, dp(52), 1f).apply { marginEnd = dp(6) })
+        configRow.addView(actionButton("▣  Ruaj printerët", false) {
             saveSelections()
             showStatus("Konfigurimi u ruajt.")
-        })
-        content.addView(button("Testo etiketën 40 × 30 mm") { testLabel() })
-        content.addView(button("Testo faturën (ESC/POS)") { testReceipt() })
-        status = TextView(this).apply {
-            text = "Gati për konfigurim."
-            textSize = 14f
-            setTextColor(0xFF344054.toInt())
-            setPadding(0, 24, 0, 8)
+        }, LinearLayout.LayoutParams(0, dp(52), 1f).apply { marginStart = dp(6) })
+        content.addView(configRow, spacedParams(bottom = 16))
+
+        // Test actions
+        val testRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        testRow.addView(actionButton("▥\nTesto etiketën\n40 × 30 mm", true) { testLabel() },
+            LinearLayout.LayoutParams(0, dp(112), 1f).apply { marginEnd = dp(6) })
+        testRow.addView(actionButton("▤\nTesto faturën\n(ESC/POS)", false) { testReceipt() },
+            LinearLayout.LayoutParams(0, dp(112), 1f).apply { marginStart = dp(6) })
+        content.addView(testRow, spacedParams(bottom = 16))
+
+        // Queue / current activity card
+        val queueCard = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(16), dp(14), dp(16), dp(14))
+            background = rounded(0xFFFFFFFF.toInt(), 18, 0xFFDCE2EC.toInt(), dp(1))
         }
-        content.addView(status)
-        content.addView(TextView(this).apply {
-            text = "Shënim: printeri i etiketave duhet të mbështesë TSPL/TSPL2 dhe Bluetooth Classic SPP. Disa printerë Bluetooth përdorin BLE ose protokoll të pronarit."
-            textSize = 12f
-            setTextColor(0xFF667085.toInt())
-            setPadding(0, 20, 0, 0)
+        val queueIcon = TextView(this).apply {
+            text = "▰"
+            textSize = 24f
+            setTextColor(muted)
+            layoutParams = LinearLayout.LayoutParams(dp(42), -2).apply { marginEnd = dp(10) }
+        }
+        queueCard.addView(queueIcon)
+        val queueTexts = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        queueTexts.addView(TextView(this).apply {
+            text = "Printime nga Unionline"
+            textSize = 16f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(dark)
         })
+        queueTexts.addView(TextView(this).apply {
+            text = "Bridge pret kërkesën e radhës"
+            textSize = 13f
+            setTextColor(muted)
+            setPadding(0, dp(2), 0, 0)
+        })
+        queueCard.addView(queueTexts, LinearLayout.LayoutParams(0, -2, 1f))
+        val readyBadge = TextView(this).apply {
+            text = "Gati"
+            textSize = 12f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(green)
+            setPadding(dp(12), dp(7), dp(12), dp(7))
+            background = rounded(0xFFE7F7ED.toInt(), 30)
+        }
+        queueCard.addView(readyBadge)
+        content.addView(queueCard, spacedParams(bottom = 14))
+
+        content.addView(TextView(this).apply {
+            text = "Shënim: printeri i etiketave duhet të mbështesë TSPL/TSPL2 dhe Bluetooth Classic SPP. Disa printerë përdorin BLE ose protokoll të pronarit."
+            textSize = 12f
+            setTextColor(muted)
+            setPadding(dp(4), dp(4), dp(4), dp(8))
+        })
+
         scroll.addView(content)
-        root.addView(scroll)
+        root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
         setContentView(root)
     }
 
-    private fun section(s: String) = TextView(this).apply {
-        text = s; textSize = 16f; setTextColor(0xFF101828.toInt())
-        setPadding(0, 14, 0, 4)
-    }
+    private fun printerCard(symbol: String, title: String, tint: Int) =
+        LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(14), dp(10), dp(14), dp(10))
+            background = rounded(0xFFFFFFFF.toInt(), 16, 0xFFDCE2EC.toInt(), dp(1))
+            val icon = TextView(this@MainActivity).apply {
+                text = symbol
+                textSize = 27f
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                setTextColor(tint)
+                gravity = Gravity.CENTER
+                layoutParams = LinearLayout.LayoutParams(dp(48), dp(48)).apply { marginEnd = dp(10) }
+            }
+            addView(icon)
+            addView(TextView(this@MainActivity).apply {
+                text = title
+                textSize = 16f
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                setTextColor(0xFF172033.toInt())
+            })
+        }
 
-    private fun button(label: String, action: () -> Unit) = Button(this).apply {
+    private fun actionButton(label: String, primary: Boolean, action: () -> Unit) = Button(this).apply {
         text = label
         isAllCaps = false
+        textSize = 14f
+        gravity = Gravity.CENTER
+        setTextColor(if (primary) 0xFFFFFFFF.toInt() else 0xFF172033.toInt())
+        background = rounded(if (primary) 0xFFBE1622.toInt() else 0xFFE6EAF0.toInt(), 16)
+        stateListAnimator = null
         setOnClickListener { action() }
     }
+
+    private fun rounded(color: Int, radius: Int, strokeColor: Int = 0x00000000, strokeWidth: Int = 0) =
+        android.graphics.drawable.GradientDrawable().apply {
+            setColor(color)
+            cornerRadius = dp(radius).toFloat()
+            if (strokeWidth > 0) setStroke(strokeWidth, strokeColor)
+        }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+
+    private fun spacedParams(bottom: Int, left: Int = 0, right: Int = 0) =
+        LinearLayout.LayoutParams(-1, -2).apply {
+            bottomMargin = dp(bottom)
+            leftMargin = dp(left)
+            rightMargin = dp(right)
+        }
 
     private fun hasBluetoothPermission(): Boolean =
         Build.VERSION.SDK_INT < 31 || checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED

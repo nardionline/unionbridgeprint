@@ -124,7 +124,7 @@ Version 0.1.2: fixed TSPL command line endings so each TEXT/BAR/BARCODE command 
 - SKU shifted left and slightly lower; barcode shifted slightly lower and shortened slightly.
 
 
-## Union Bridge v0.2.0 — multi-label basket support
+## Union Bridge v0.2.1 — multi-label basket support
 - Accepts the Unionline Web basket payload: `type: "label"` with a `labels` array.
 - Each label supports its own `copies` value (Unionline sends the basket quantity).
 - Builds all TSPL/TSPL2 label commands into one Bluetooth SPP print session, in basket order.

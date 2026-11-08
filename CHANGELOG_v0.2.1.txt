@@ -1,0 +1,10 @@
+Unionline Bridge v0.2.1
+
+- Redesigned Android home screen in Baumarket red/white/grey style.
+- Added a clear green Bridge-ready status card.
+- Grouped label and receipt printer selectors into separate sections.
+- Placed refresh and save actions side by side.
+- Made label and ESC/POS receipt test actions more prominent.
+- Added a custom BV + printer launcher icon.
+- Preserved existing Bluetooth selection, saved MAC addresses, deep-link handling,
+  multi-label TSPL/TSPL2 printing, and ESC/POS receipt printing logic.
