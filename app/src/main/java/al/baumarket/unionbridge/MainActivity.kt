@@ -66,7 +66,7 @@ class MainActivity : Activity() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(20), dp(24), dp(20), dp(24))
-            background = rounded(red, 0, 0, 0, 0)
+            background = rounded(red, 0)
         }
         val logo = TextView(this).apply {
             text = "BV"
