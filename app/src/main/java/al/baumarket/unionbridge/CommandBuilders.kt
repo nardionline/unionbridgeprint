@@ -9,21 +9,18 @@ object CommandBuilders {
     // TSPL uses millimetres and is widely shared by TSPL/TSPL2-compatible label printers.
     // 203 dpi is approximately 8 dots/mm.
     fun tspl(label: LabelPayload, copies: Int): ByteArray {
-        // Compact 40 x 30 mm label layout for TSPL/TSPL2-compatible printers at ~203 dpi.
-        // Product name is left-aligned to show more characters; keep price right-aligned,
-        // move SKU left/down and shift the barcode slightly down.
+        // Conservative layout for 40 x 30 mm labels at 203 dpi (~8 dots/mm).
+        // Keep every text field inside the 320-dot printable width.
         val w = label.widthMm
         val h = label.heightMm
         fun clean(s: String) = s.replace("\"", "'").replace("\r", " ").replace("\n", " ").trim()
-        val company = clean(label.company).take(24)
-        val name = clean(label.name)
-        val sku = clean(label.sku).take(24)
-        val rawPrice = clean(label.price).take(16)
-        val price = if (rawPrice.isNotBlank() && !rawPrice.endsWith(" L", ignoreCase = true) && !rawPrice.endsWith("L", ignoreCase = true)) "$rawPrice L" else rawPrice
-        val barcode = clean(label.barcode).filter { it.isLetterOrDigit() || it in "-._/" }.take(32)
 
-        // Layout for 40 x 30 mm at 203 dpi (approximately 8 dots/mm).
-        // Product title is left-aligned on two lines; price remains at the approved position.
+        val company = clean(label.company).take(20)
+        val name = clean(label.name)
+        val sku = clean(label.sku).take(20)
+        val price = clean(label.price).take(12)
+        val barcode = clean(label.barcode).filter { it.isLetterOrDigit() || it in "-._/" }.take(20)
+
         val b = StringBuilder()
         b.append("SIZE ${w} mm,${h} mm\r\n")
         b.append("GAP 2 mm,0 mm\r\n")
@@ -31,34 +28,34 @@ object CommandBuilders {
         b.append("REFERENCE 0,0\r\n")
         b.append("CLS\r\n")
 
-        // Font 2 at 1x scale; left alignment lets more characters fit per line.
-        val titleLines = splitTitle(name, 27)
-        fun centeredX(text: String, charWidth: Int, minX: Int = 16): Int {
-            // Use a safe 16-dot margin on both sides of the 320-dot label.
-            return (((320 - text.length * charWidth) / 2).coerceIn(minX, 320 - minX - text.length * charWidth))
+        // TSPL font 2 is approximately 12 dots wide; 22 chars fit safely.
+        val titleLines = splitTitle(name, 22)
+        if (titleLines.first.isNotBlank()) {
+            b.append("TEXT 16,5,\"2\",0,1,1,\"${clean(titleLines.first)}\"\r\n")
         }
-        val line1 = titleLines.first
-        val line2 = titleLines.second
-        if (line1.isNotBlank()) {
-            b.append("TEXT 24,5,\"2\",0,1,1,\"${clean(line1)}\"\r\n")
+        if (titleLines.second.isNotBlank()) {
+            b.append("TEXT 16,25,\"2\",0,1,1,\"${clean(titleLines.second)}\"\r\n")
         }
-        if (line2.isNotBlank()) {
-            b.append("TEXT 24,25,\"2\",0,1,1,\"${clean(line2)}\"\r\n")
-        }
-        // Thin divider below the title.
         b.append("BAR 16,48,288,1\r\n")
-        // Keep the approved large price position. Move SKU farther left and slightly down.
+
+        // Font 4 is wider than the earlier estimate. Use its real conservative
+        // width so the last digit and the unit remain inside the right edge.
         if (price.isNotBlank()) {
-            val priceCharWidth = 16
-            val priceRightEdge = 264 // larger safe right margin so the final L remains inside printable area
-            val priceX = (priceRightEdge - price.length * priceCharWidth).coerceAtLeast(20)
+            val priceCharWidth = 24
+            val rightEdge = 304
+            val priceX = (rightEdge - price.length * priceCharWidth).coerceAtLeast(16)
             b.append("TEXT $priceX,64,\"4\",0,1,1,\"$price\"\r\n")
         }
-        if (sku.isNotBlank()) b.append("TEXT 48,104,\"2\",0,1,1,\"$sku\"\r\n")
-        // Shorter barcode to leave more whitespace and keep the label compact.
+
+        if (sku.isNotBlank()) {
+            b.append("TEXT 16,104,\"2\",0,1,1,\"$sku\"\r\n")
+        }
+
         if (barcode.isNotBlank()) {
-            b.append("BARCODE 54,130,\"128\",36,0,0,2,3,\"$barcode\"\r\n")
-            b.append("TEXT ${centeredX(barcode, 7)},171,\"1\",0,1,1,\"$barcode\"\r\n")
+            // Keep barcode width bounded; human-readable digits use compact font 1.
+            b.append("BARCODE 20,130,\"128\",34,0,0,2,3,\"$barcode\"\r\n")
+            val barcodeTextX = ((320 - barcode.length * 8) / 2).coerceAtLeast(8)
+            b.append("TEXT $barcodeTextX,171,\"1\",0,1,1,\"$barcode\"\r\n")
         }
         b.append("PRINT ${copies.coerceIn(1,100)},1\r\n")
         return b.toString().toByteArray(Charsets.US_ASCII)

@@ -146,3 +146,10 @@ Version 0.1.2: fixed TSPL command line endings so each TEXT/BAR/BARCODE command 
   ]
 }
 ```
+
+
+## v0.2.3 – Print layout correction
+- Based on v0.2.1, which the user confirmed prints successfully.
+- Kept Bluetooth SPP transport and print queue logic unchanged.
+- Reduced title/SKU/barcode text widths to prevent right-edge clipping on 40x30 mm labels.
+- Corrected the price text width estimate for TSPL font 4 so the full price stays inside the printable area.
