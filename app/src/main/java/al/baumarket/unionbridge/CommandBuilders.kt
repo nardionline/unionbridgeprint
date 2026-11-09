@@ -18,7 +18,15 @@ object CommandBuilders {
         val company = clean(label.company).take(20)
         val name = clean(label.name)
         val sku = clean(label.sku).take(20)
-        val price = clean(label.price).take(12)
+        // Prices may arrive from JavaScript/locale formatting with Unicode
+        // grouping spaces (NBSP / narrow NBSP). TSPL is sent as US-ASCII,
+        // so those characters become '?' on the printer. Normalize them
+        // to a printable ASCII comma before building the TSPL command.
+        val price = clean(label.price)
+            .replace(Regex("[\\u00A0\\u202F\\u2009\\u2007]"), ",")
+            .replace("，", ",")
+            .filter { it.code in 32..126 }
+            .take(12)
         val barcode = clean(label.barcode).filter { it.isLetterOrDigit() || it in "-._/" }.take(20)
 
         val b = StringBuilder()
