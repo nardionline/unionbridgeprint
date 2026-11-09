@@ -273,8 +273,16 @@ class MainActivity : Activity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 401 && grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) refreshDevices()
-        else showStatus("Lejo Bluetooth permissions në Android Settings për të përdorur printerët.")
+        if (requestCode == 401 && grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+            refreshDevices()
+            // If Web opened the Bridge before Android permission was granted, resume that exact request.
+            val uri = pendingUri
+            pendingUri = null
+            uri?.let { handleBridgeUri(it) }
+        } else {
+            pendingUri = null
+            showStatus("Lejo Bluetooth permissions në Android Settings për të përdorur printerët.")
+        }
     }
 
     private fun refreshDevices() {
@@ -295,6 +303,8 @@ class MainActivity : Activity() {
             }
             selectMac(labelSpinner, prefs.getString("label_mac", null))
             selectMac(receiptSpinner, prefs.getString("receipt_mac", null))
+            // Persist the current selections (or the first paired device if this is the first setup).
+            saveSelections()
             showStatus("U gjetën ${devices.size} pajisje Bluetooth të çiftuara.")
         } catch (e: SecurityException) {
             showStatus("Lejo Bluetooth Connect dhe provo përsëri.")
@@ -321,12 +331,14 @@ class MainActivity : Activity() {
     }
 
     private fun testLabel() {
+        saveSelections()
         val mac = selectedMac(labelSpinner) ?: return showStatus("Zgjidh/çifto printerin e etiketave.")
         val p = LabelPayload("UNIONLINE", "Trapano 750W Professional con percussione e valigetta", "TR-10025", "4,990 L", "123456789012", 40, 30, "tspl2")
         printAsync(mac, CommandBuilders.tspl(p, 1), "Etiketa test")
     }
 
     private fun testReceipt() {
+        saveSelections()
         val mac = selectedMac(receiptSpinner) ?: return showStatus("Zgjidh/çifto printerin e faturave.")
         val p = ReceiptPayload("UNIONLINE", "FATURE TEST", "TEST-0001", "2026-10-25",
             listOf(ReceiptItem("Produkt test", "2", "500", "1,000")),
@@ -350,11 +362,15 @@ class MainActivity : Activity() {
         try {
             val json = String(Base64.decode(encoded, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING), Charsets.UTF_8)
             val payload = PrintPayload.parse(json)
-            val mac = payload.printerMac ?: if (payload.type == "label") prefs.getString("label_mac", null) else prefs.getString("receipt_mac", null)
+            val savedMac = if (payload.type == "label") prefs.getString("label_mac", null) else prefs.getString("receipt_mac", null)
+            val selectedMac = if (payload.type == "label") selectedMac(labelSpinner) else selectedMac(receiptSpinner)
+            val mac = payload.printerMac ?: savedMac ?: selectedMac
             if (mac.isNullOrBlank()) {
-                showStatus("Nuk është zgjedhur printeri për këtë lloj dokumenti.")
+                showStatus("Nuk u gjet printer i ruajtur për këtë dokument. Hap Bridge, zgjidh printerin dhe shtyp Ruaj printerët.")
                 return
             }
+            // Keep the selected device saved for the next Web request.
+            prefs.edit().putString(if (payload.type == "label") "label_mac" else "receipt_mac", mac).apply()
             if (payload.type == "label") {
                 val out = ByteArrayOutputStream()
                 payload.labels.forEach { job ->

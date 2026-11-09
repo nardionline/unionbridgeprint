@@ -1,0 +1,5 @@
+Unionline Bridge Android v0.2.4
+- Fix: resume a pending Web print request after Bluetooth permission is granted.
+- Fix: persist selected label and receipt printers after device refresh and test actions.
+- Fix: Web print requests fall back to the currently selected printer when a saved MAC is missing.
+- Preserve TSPL/TSPL2 label layout and ESC/POS receipt printing from v0.2.3.
