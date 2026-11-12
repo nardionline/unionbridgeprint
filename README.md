@@ -153,3 +153,8 @@ Version 0.1.2: fixed TSPL command line endings so each TEXT/BAR/BARCODE command 
 - Kept Bluetooth SPP transport and print queue logic unchanged.
 - Reduced title/SKU/barcode text widths to prevent right-edge clipping on 40x30 mm labels.
 - Corrected the price text width estimate for TSPL font 4 so the full price stays inside the printable area.
+
+
+## Version 0.3.2 – background print diagnostics
+
+Print jobs are serialized in a single in-memory queue per service instance (not a durable queue across an Android process kill). Each request is assigned a unique ID and the last 100 diagnostic events are retained in SharedPreferences (`union_bridge` / `print_log`). Logcat tags: `UnionBridge` and `UnionBridgePrint`. `SENT` means bytes were written to the Bluetooth socket; it does not guarantee physical paper output. VersionCode 9 / versionName 0.3.2.

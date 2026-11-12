@@ -1,0 +1,10 @@
+Unionline Bridge v0.3.2
+
+- Shton radhë seriale në memorien e shërbimit për kërkesat e printimit në sfond; kërkesat e njëpasnjëshme përpunohen njëra pas tjetrës pa hapur lidhje paralele.
+- Çdo kërkesë merr ID unike dhe regjistrohet me fazat RECEIVED, START, CONNECT, SENT ose ERROR.
+- Ruhet në SharedPreferences historiku i 100 ngjarjeve të fundit dhe dërgohen mesazhe diagnostikuese në Logcat (UnionBridge / UnionBridgePrint).
+- Gabimet gjatë nisjes së shërbimit regjistrohen nga MainActivity në vend që të fshihen në heshtje.
+- Ruhet printimi në sfond; nuk hapet ekrani i konfigurimit kur printeri është ruajtur dhe lejet janë dhënë.
+- Ruhet mbështetja ekzistuese TSPL/TSPL2 40x30 mm dhe ESC/POS.
+
+Shënim: SENT konfirmon që të dhënat u shkruan në socket Bluetooth; printeri nuk kthen konfirmim fizik që etiketa doli në letër.

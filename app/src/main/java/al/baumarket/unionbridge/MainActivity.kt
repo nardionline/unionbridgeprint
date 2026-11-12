@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Base64
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.ArrayAdapter
@@ -63,14 +64,20 @@ class MainActivity : Activity() {
             val key = if (payload.type == "label") "label_mac" else "receipt_mac"
             val mac = payload.printerMac ?: prefs.getString(key, null)
             if (mac.isNullOrBlank()) return false
+            val requestId = java.util.UUID.randomUUID().toString()
             val serviceIntent = Intent(this, PrintService::class.java).apply {
                 action = PrintService.ACTION_PRINT
                 putExtra(PrintService.EXTRA_PAYLOAD_JSON, json)
                 putExtra(PrintService.EXTRA_MAC, mac)
+                putExtra(PrintService.EXTRA_REQUEST_ID, requestId)
             }
             if (Build.VERSION.SDK_INT >= 26) startForegroundService(serviceIntent) else startService(serviceIntent)
+            Log.i("UnionBridge", "Dispatch accepted: id=$requestId type=${payload.type} mac=$mac")
+            prefs.edit().putString("last_dispatch", "${System.currentTimeMillis()}|$requestId|ACCEPTED|${payload.type}").apply()
             true
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e("UnionBridge", "Background dispatch failed", e)
+            prefs.edit().putString("last_dispatch", "${System.currentTimeMillis()}|ERROR|${e.javaClass.simpleName}|${e.message}").apply()
             false
         }
     }

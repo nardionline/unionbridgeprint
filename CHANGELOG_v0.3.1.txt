@@ -1,0 +1,12 @@
+Unionline Bridge v0.3.1 - Bluetooth connection reliability
+
+- Added up to three connection attempts for transient Bluetooth SPP connection failures.
+- Added short delays after cancelling discovery and between connection attempts.
+- Payload is sent only once after a successful connection. The app deliberately does not
+  resend automatically after a write-stage failure because the printer may already have
+  received the label, and resending could create duplicate labels.
+- Improved error text for connection failures and uncertain write failures.
+- TSPL/TSPL2 and ESC/POS payload generation is unchanged.
+
+Physical printer testing is required. If a job fails after connection, check the printer
+before manually retrying to avoid a duplicate label.
