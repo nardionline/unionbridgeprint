@@ -1,0 +1,11 @@
+Unionline Bridge v0.3.0 - Background printing
+
+- Added a non-exported Android foreground service for Bluetooth print jobs.
+- Normal unionbridge://print requests are routed to the service when Bluetooth permission
+  is granted and a printer MAC has already been saved.
+- The configuration Activity is not displayed for normal print requests.
+- The Bridge configuration screen remains available when permissions or a saved printer
+  selection are missing, so users can configure the printer.
+- TSPL/TSPL2 label and ESC/POS receipt command generation remains unchanged.
+- Android displays a low-importance ongoing notification while the print job is being sent.
+- Requires testing on physical Android devices and the target Bluetooth printers.

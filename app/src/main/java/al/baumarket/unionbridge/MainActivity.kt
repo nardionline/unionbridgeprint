@@ -36,16 +36,55 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val incoming = intent?.data
+        if (incoming != null && incoming.scheme == "unionbridge" && incoming.host == "print" &&
+            hasBluetoothPermission() && dispatchPrintToBackground(incoming)) {
+            finish()
+            return
+        }
         buildUi()
-        pendingUri = intent?.data
+        pendingUri = incoming
         if (hasBluetoothPermission()) refreshDevices() else requestBluetoothPermission()
         pendingUri?.let { handleBridgeUri(it) }
+    }
+
+    /**
+     * Route normal print requests to a foreground service. The Activity is only
+     * shown when Bluetooth permission or a saved printer configuration is missing.
+     */
+    private fun dispatchPrintToBackground(uri: Uri): Boolean {
+        val encoded = uri.getQueryParameter("payload") ?: return false
+        return try {
+            val json = String(
+                Base64.decode(encoded, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING),
+                Charsets.UTF_8
+            )
+            val payload = PrintPayload.parse(json)
+            val key = if (payload.type == "label") "label_mac" else "receipt_mac"
+            val mac = payload.printerMac ?: prefs.getString(key, null)
+            if (mac.isNullOrBlank()) return false
+            val serviceIntent = Intent(this, PrintService::class.java).apply {
+                action = PrintService.ACTION_PRINT
+                putExtra(PrintService.EXTRA_PAYLOAD_JSON, json)
+                putExtra(PrintService.EXTRA_MAC, mac)
+            }
+            if (Build.VERSION.SDK_INT >= 26) startForegroundService(serviceIntent) else startService(serviceIntent)
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        intent.data?.let { handleBridgeUri(it) }
+        val uri = intent.data
+        if (uri != null && uri.scheme == "unionbridge" && uri.host == "print" &&
+            hasBluetoothPermission() && dispatchPrintToBackground(uri)) {
+            finish()
+            return
+        }
+        uri?.let { handleBridgeUri(it) }
     }
 
     private fun buildUi() {
