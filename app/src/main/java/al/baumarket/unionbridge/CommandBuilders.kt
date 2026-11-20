@@ -6,6 +6,18 @@ import java.text.Normalizer
 import kotlin.math.roundToInt
 
 object CommandBuilders {
+    /**
+     * Select the configured label language. TSPL2 is backward-compatible with
+     * the common TSPL command subset used by this 40x30 mm layout; keeping the
+     * selection explicit lets us add printer-specific TSPL2 commands later
+     * without changing the Web payload format.
+     */
+    fun label(label: LabelPayload, copies: Int): ByteArray =
+        when (label.language.lowercase()) {
+            "tspl", "tspl2" -> tspl(label, copies)
+            else -> throw IllegalArgumentException("Protokoll etikete i panjohur: ${label.language}")
+        }
+
     // TSPL uses millimetres and is widely shared by TSPL/TSPL2-compatible label printers.
     // 203 dpi is approximately 8 dots/mm.
     fun tspl(label: LabelPayload, copies: Int): ByteArray {

@@ -87,7 +87,11 @@ class PrintService : Service() {
                 val description: String
                 if (payload.type == "label") {
                     val output = ByteArrayOutputStream()
-                    payload.labels.forEach { item -> output.write(CommandBuilders.tspl(item.label, item.copies)) }
+                    val protocol = getSharedPreferences("union_bridge", MODE_PRIVATE)
+                        .getString("label_protocol", "TSPL2")?.lowercase() ?: "tspl2"
+                    payload.labels.forEach { item ->
+                        output.write(CommandBuilders.label(item.label.copy(language = protocol), item.copies))
+                    }
                     data = output.toByteArray()
                     val copies = payload.labels.sumOf { it.copies }
                     description = "$copies etiketa u dërguan te printeri"

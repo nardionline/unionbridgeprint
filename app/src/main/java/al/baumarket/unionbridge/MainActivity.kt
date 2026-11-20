@@ -29,6 +29,7 @@ class MainActivity : Activity() {
     private lateinit var status: TextView
     private lateinit var labelSpinner: Spinner
     private lateinit var receiptSpinner: Spinner
+    private lateinit var protocolSpinner: Spinner
     private lateinit var devices: List<android.bluetooth.BluetoothDevice>
     private var pendingUri: Uri? = null
     private val adapter: BluetoothAdapter? by lazy {
@@ -183,7 +184,16 @@ class MainActivity : Activity() {
         // Label printer card
         content.addView(printerCard("▣", "Printeri i etiketave", 0xFFBE1622.toInt()), spacedParams(bottom = 0))
         labelSpinner = Spinner(this)
-        content.addView(labelSpinner, spacedParams(bottom = 14, left = 14, right = 14))
+        content.addView(labelSpinner, spacedParams(bottom = 10, left = 14, right = 14))
+
+        content.addView(printerCard("⌁", "Protokolli", 0xFFBE1622.toInt()), spacedParams(bottom = 0))
+        protocolSpinner = Spinner(this)
+        val protocolAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, listOf("TSPL", "TSPL2")).also {
+            it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        protocolSpinner.adapter = protocolAdapter
+        content.addView(protocolSpinner, spacedParams(bottom = 14, left = 14, right = 14))
+        protocolSpinner.setSelection(if (prefs.getString("label_protocol", "TSPL2") == "TSPL") 0 else 1)
 
         content.addView(printerCard("▤", "Printeri i faturave", 0xFFBE1622.toInt()), spacedParams(bottom = 0))
         receiptSpinner = Spinner(this)
@@ -373,14 +383,20 @@ class MainActivity : Activity() {
         val editor = prefs.edit()
         selectedMac(labelSpinner)?.let { editor.putString("label_mac", it) }
         selectedMac(receiptSpinner)?.let { editor.putString("receipt_mac", it) }
+        if (::protocolSpinner.isInitialized) {
+            editor.putString("label_protocol", if (protocolSpinner.selectedItemPosition == 0) "TSPL" else "TSPL2")
+        }
         editor.apply()
     }
+
+    private fun selectedProtocol(): String =
+        if (::protocolSpinner.isInitialized && protocolSpinner.selectedItemPosition == 0) "tspl" else "tspl2"
 
     private fun testLabel() {
         saveSelections()
         val mac = selectedMac(labelSpinner) ?: return showStatus("Zgjidh/çifto printerin e etiketave.")
-        val p = LabelPayload("UNIONLINE", "Trapano 750W Professional con percussione e valigetta", "TR-10025", "4,990 L", "123456789012", 40, 30, "tspl2")
-        printAsync(mac, CommandBuilders.tspl(p, 1), "Etiketa test")
+        val p = LabelPayload("UNIONLINE", "Trapano 750W Professional con percussione e valigetta", "TR-10025", "4,990 L", "123456789012", 40, 30, selectedProtocol())
+        printAsync(mac, CommandBuilders.label(p, 1), "Etiketa test")
     }
 
     private fun testReceipt() {
@@ -418,9 +434,11 @@ class MainActivity : Activity() {
             // Keep the selected device saved for the next Web request.
             prefs.edit().putString(if (payload.type == "label") "label_mac" else "receipt_mac", mac).apply()
             if (payload.type == "label") {
+                val protocol = prefs.getString("label_protocol", "TSPL2")?.lowercase() ?: "tspl2"
                 val out = ByteArrayOutputStream()
                 payload.labels.forEach { job ->
-                    out.write(CommandBuilders.tspl(job.label, job.copies))
+                    val configuredJob = job.label.copy(language = protocol)
+                    out.write(CommandBuilders.label(configuredJob, job.copies))
                 }
                 val totalCopies = payload.labels.sumOf { it.copies }
                 printAsync(mac, out.toByteArray(), "${totalCopies} etiketa (${payload.labels.size} artikuj)")
