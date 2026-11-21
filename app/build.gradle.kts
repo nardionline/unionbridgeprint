@@ -11,8 +11,8 @@ android {
         applicationId = "al.baumarket.unionbridge"
         minSdk = 26
         targetSdk = 35
-        versionCode = 16
-        versionName = "0.3.9"
+        versionCode = 15
+        versionName = "0.3.8"
     }
 
     compileOptions {
