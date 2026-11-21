@@ -24,11 +24,10 @@ object CommandBuilders {
             .replace(Regex("[\\u00A0\\u202F\\u2009\\u2007]"), ",")
             .replace("，", ",")
             .filter { it.code in 32..126 }
-            .replace(Regex("(?i)\\\\s*lek\\\\s*$"), "")
-            .replace(Regex("(?i)\\\\s*l\\\\s*$"), "")
+            .replace(Regex("(?i)\\s*lek\\s*$"), "")
+            .replace(Regex("(?i)\\s*l\\s*$"), "")
             .trim()
-            .take(10)
-        // TSPL2 must always print the currency suffix once; reserve room for the final L.
+            .take(12)
         val price = if (rawPrice.isNotBlank()) "$rawPrice L" else ""
         val barcode = clean(label.barcode).filter { it.isLetterOrDigit() || it in "-._/" }.take(20)
 
@@ -73,37 +72,34 @@ object CommandBuilders {
             .replace("\"", "")
             .replace("\r", " ")
             .replace("\n", " ")
+            .trim()
             .replace(Regex("[\\u00A0\\u202F\\u2009\\u2007]"), ",")
             .replace("，", ",")
-            .trim()
             .filter { it.code in 32..126 }
 
         val name = clean(label.name)
         val first = name.take(25)
         val second = if (name.length > 25) name.drop(25).take(25) else ""
         val price = clean(label.price)
-            .replace(Regex("(?i)\\s*lek\\s*$"), "")
-            .removeSuffix(" L")
+            .replace(Regex("(?i)\\s*(lek|l)\\s*$"), "")
             .trim()
         val sku = clean(label.sku)
         val barcode = clean(label.barcode).replace(" ", "")
 
-        val b = StringBuilder()
-        b.append("SIZE 40 mm,30 mm\r\n")
-        b.append("DIRECTION 0\r\n")
-        b.append("GAP 2 mm,0\r\n")
-        b.append("DENSITY 8\r\n")
-        b.append("CLS\r\n")
-        if (first.isNotBlank()) b.append("TEXT 4,13,\"2\",0,1,1,\"$first\"\r\n")
-        if (second.isNotBlank()) b.append("TEXT 4,35,\"2\",0,1,1,\"$second\"\r\n")
-        b.append("BAR 4,60,312,1\r\n")
-        if (price.isNotBlank()) b.append("TEXT 120,70,\"2\",0,2,2,\"$price L\"\r\n")
-        if (sku.isNotBlank()) b.append("TEXT 4,120,\"2\",0,1,1,\"$sku\"\r\n")
-        if (barcode.isNotBlank()) b.append("BARCODE 40,150,\"128\",50,1,0,2,2,\"$barcode\"\r\n")
-        b.append("PRINT ${copies.coerceIn(1,100)}\r\n")
-        return b.toString().toByteArray(Charsets.US_ASCII)
+        val command = StringBuilder()
+        command.append("SIZE 40 mm,30 mm\r\n")
+        command.append("DIRECTION 0\r\n")
+        command.append("GAP 2 mm,0\r\n")
+        command.append("DENSITY 8\r\n")
+        command.append("CLS\r\n")
+        if (first.isNotBlank()) command.append("TEXT 4,13,\"3\",0,1,1,\"$first\"\r\n")
+        if (second.isNotBlank()) command.append("TEXT 4,35,\"3\",0,1,1,\"$second\"\r\n")
+        if (price.isNotBlank()) command.append("TEXT 120,70,\"2\",0,2,2,\"${price} L\"\r\n")
+        if (sku.isNotBlank()) command.append("TEXT 4,120,\"3\",0,1,1,\"$sku\"\r\n")
+        if (barcode.isNotBlank()) command.append("BARCODE 40,150,\"128\",60,1,0,2,2,\"$barcode\"\r\n")
+        command.append("PRINT ${copies.coerceIn(1,100)}\r\n")
+        return command.toString().toByteArray(Charsets.US_ASCII)
     }
-
 
     private fun splitTitle(value: String, targetChars: Int): Pair<String, String> {
         val normalized = value.replace("\r", " ").replace("\n", " ").trim()

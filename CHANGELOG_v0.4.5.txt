@@ -1,0 +1,5 @@
+Unionline Bridge Android v0.4.5
+- TSPL2: normalize currency suffix so price ends with exactly one ' L'.
+- TSPL / MHT-P29L: restored the proven v0.3.8 WinDev TSPL command sequence.
+- Removed experimental separator BAR from the TSPL WinDev profile.
+- Bluetooth transport, app UI, and ESC/POS were not intentionally changed.
