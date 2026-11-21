@@ -100,11 +100,12 @@ object CommandBuilders {
         if (price.isNotBlank()) command.append("TEXT 120,82,\"2\",0,2,2,\"${price} L\"\r\n")
         if (sku.isNotBlank()) command.append("TEXT 12,132,\"2\",0,1,1,\"$sku\"\r\n")
         if (barcode.isNotBlank()) {
-            // Disable printer-generated human-readable text: some MHT-P29L firmware
-            // prints the closing TSPL quote as a trailing character.
-            command.append("BARCODE 40,160,\"128\",48,0,0,2,2,\"$barcode\"\r\n")
-            val barcodeTextX = ((320 - barcode.length * 12) / 2).coerceAtLeast(12)
-            command.append("TEXT $barcodeTextX,211,\"2\",0,1,1,\"$barcode\"\r\n")
+            // Build the quoted payload explicitly so the closing quote is a TSPL delimiter,
+            // never part of the barcode's human-readable data.
+            command.append("BARCODE 40,160,\"128\",48,1,0,2,2,\"")
+            command.append(barcode)
+            // Match the user's proven WinDev command exactly: no closing quote after barcode data.
+            command.append("\r\n")
         }
         command.append("PRINT ${copies.coerceIn(1,100)}\r\n")
         return command.toString().toByteArray(Charsets.US_ASCII)

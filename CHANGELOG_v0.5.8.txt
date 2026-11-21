@@ -1,0 +1,4 @@
+Unionline Bridge Android v0.5.8
+- TSPL MHT-P29L only: assemble the BARCODE command payload in explicit pieces and append the closing quote as a delimiter.
+- Restored the original printer-generated human-readable barcode text; no extra TEXT command is added.
+- Preserves the v0.5.6 TSPL barcode position, height, human-readable flag, width parameters, label layout, TSPL2, Bluetooth, and ESC/POS.
