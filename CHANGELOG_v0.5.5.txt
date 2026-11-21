@@ -1,0 +1,3 @@
+Unionline Bridge Android v0.5.5
+- Build fix: added missing android.widget.RadioButton and android.widget.RadioGroup imports.
+- No UI layout, protocol selection behavior, Bluetooth, TSPL/TSPL2, or ESC/POS logic changes.
