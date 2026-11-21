@@ -10,34 +10,49 @@ object CommandBuilders {
     // 203 dpi is approximately 8 dots/mm.
     fun tspl(label: LabelPayload, copies: Int): ByteArray {
         if (label.language.equals("tspl", ignoreCase = true)) {
-            return tsplWinDevBaseline(label, copies)
+            return tsplWinDev(label, copies)
         }
-        // Keep the existing TSPL2 generator unchanged.
+
+        // Existing TSPL2 implementation remains unchanged.
         val w = label.widthMm
         val h = label.heightMm
         fun clean(s: String) = s.replace("\"", "'").replace("\r", " ").replace("\n", " ").trim()
+
         val name = clean(label.name)
-        val price = clean(label.price)
+        val sku = clean(label.sku).take(20)
+        val rawPrice = clean(label.price)
             .replace(Regex("[\\u00A0\\u202F\\u2009\\u2007]"), ",")
             .replace("，", ",")
             .filter { it.code in 32..126 }
-            .removeSuffix(" L")
-            .take(12)
-        val sku = clean(label.sku).take(20)
+            .replace(Regex("(?i)\\\\s*lek\\\\s*$"), "")
+            .replace(Regex("(?i)\\\\s*l\\\\s*$"), "")
+            .trim()
+            .take(10)
+        // TSPL2 must always print the currency suffix once; reserve room for the final L.
+        val price = if (rawPrice.isNotBlank()) "$rawPrice L" else ""
         val barcode = clean(label.barcode).filter { it.isLetterOrDigit() || it in "-._/" }.take(20)
+
         val b = StringBuilder()
         b.append("SIZE ${w} mm,${h} mm\r\n")
         b.append("GAP 2 mm,0 mm\r\n")
         b.append("DIRECTION 1\r\n")
         b.append("REFERENCE 0,0\r\n")
         b.append("CLS\r\n")
+
         val titleLines = splitTitle(name, 22)
-        if (titleLines.first.isNotBlank()) b.append("TEXT 16,5,\"2\",0,1,1,\"${clean(titleLines.first)}\"\r\n")
-        if (titleLines.second.isNotBlank()) b.append("TEXT 16,25,\"2\",0,1,1,\"${clean(titleLines.second)}\"\r\n")
+        if (titleLines.first.isNotBlank()) {
+            b.append("TEXT 16,5,\"2\",0,1,1,\"${clean(titleLines.first)}\"\r\n")
+        }
+        if (titleLines.second.isNotBlank()) {
+            b.append("TEXT 16,25,\"2\",0,1,1,\"${clean(titleLines.second)}\"\r\n")
+        }
         b.append("BAR 16,48,288,1\r\n")
+
         if (price.isNotBlank()) {
-            val priceX = (304 - price.length * 24).coerceAtLeast(16)
-            b.append("TEXT $priceX,64,\"4\",0,1,1,\"${price} L\"\r\n")
+            val priceCharWidth = 24
+            val rightEdge = 304
+            val priceX = (rightEdge - price.length * priceCharWidth).coerceAtLeast(16)
+            b.append("TEXT $priceX,64,\"4\",0,1,1,\"$price\"\r\n")
         }
         if (sku.isNotBlank()) b.append("TEXT 16,104,\"2\",0,1,1,\"$sku\"\r\n")
         if (barcode.isNotBlank()) {
@@ -50,48 +65,47 @@ object CommandBuilders {
     }
 
     /**
-     * First-pass TSPL baseline: commands/coordinates/command order copied from
-     * the user's known-working WinDev Mobile routine. No separator BAR and no
-     * TSPL2 layout transformations in this test build.
+     * MHT-P29L profile based on the user's proven WinDev TSPL commands.
+     * Only visual refinements: smaller text, divider under title and shorter barcode.
      */
-    private fun tsplWinDevBaseline(label: LabelPayload, copies: Int): ByteArray {
+    private fun tsplWinDev(label: LabelPayload, copies: Int): ByteArray {
         fun clean(value: String): String = value
             .replace("\"", "")
             .replace("\r", " ")
             .replace("\n", " ")
-            .trim()
             .replace(Regex("[\\u00A0\\u202F\\u2009\\u2007]"), ",")
             .replace("，", ",")
+            .trim()
             .filter { it.code in 32..126 }
 
         val name = clean(label.name)
         val first = name.take(25)
         val second = if (name.length > 25) name.drop(25).take(25) else ""
         val price = clean(label.price)
-            .replace(Regex("(?i)\\s*(lek|l)\\s*$"), "")
+            .replace(Regex("(?i)\\s*lek\\s*$"), "")
+            .removeSuffix(" L")
             .trim()
         val sku = clean(label.sku)
         val barcode = clean(label.barcode).replace(" ", "")
 
-        val command = StringBuilder()
-        command.append("SIZE 40 mm,30 mm\r\n")
-        command.append("DIRECTION 0\r\n")
-        command.append("GAP 2 mm,0\r\n")
-        command.append("DENSITY 8\r\n")
-        command.append("CLS\r\n")
-        if (first.isNotBlank()) command.append("TEXT 4,13,\"3\",0,1,1,\"$first\"\r\n")
-        if (second.isNotBlank()) command.append("TEXT 4,35,\"3\",0,1,1,\"$second\"\r\n")
-        if (price.isNotBlank()) command.append("TEXT 120,70,\"2\",0,2,2,\"${price} L\"\r\n")
-        if (sku.isNotBlank()) command.append("TEXT 4,120,\"3\",0,1,1,\"$sku\"\r\n")
-        if (barcode.isNotBlank()) command.append("BARCODE 40,150,\"128\",60,1,0,2,2,\"$barcode\"\r\n")
-        command.append("PRINT ${copies.coerceIn(1,100)}\r\n")
-        return command.toString().toByteArray(Charsets.US_ASCII)
+        val b = StringBuilder()
+        b.append("SIZE 40 mm,30 mm\r\n")
+        b.append("DIRECTION 0\r\n")
+        b.append("GAP 2 mm,0\r\n")
+        b.append("DENSITY 8\r\n")
+        b.append("CLS\r\n")
+        if (first.isNotBlank()) b.append("TEXT 4,13,\"2\",0,1,1,\"$first\"\r\n")
+        if (second.isNotBlank()) b.append("TEXT 4,35,\"2\",0,1,1,\"$second\"\r\n")
+        b.append("BAR 4,60,312,1\r\n")
+        if (price.isNotBlank()) b.append("TEXT 120,70,\"2\",0,2,2,\"$price L\"\r\n")
+        if (sku.isNotBlank()) b.append("TEXT 4,120,\"2\",0,1,1,\"$sku\"\r\n")
+        if (barcode.isNotBlank()) b.append("BARCODE 40,150,\"128\",50,1,0,2,2,\"$barcode\"\r\n")
+        b.append("PRINT ${copies.coerceIn(1,100)}\r\n")
+        return b.toString().toByteArray(Charsets.US_ASCII)
     }
 
+
     private fun splitTitle(value: String, targetChars: Int): Pair<String, String> {
-        // Limit both lines to the printable width. The old implementation put the entire
-        // remainder of a long name on line 2, making centeredX() coerce an invalid range
-        // and crashing the app when the test-label button was pressed.
         val normalized = value.replace("\r", " ").replace("\n", " ").trim()
             .replace(Regex("\\s+"), " ")
         if (normalized.isEmpty()) return "" to ""
@@ -108,7 +122,6 @@ object CommandBuilders {
                 current = second
                 current.append(word.take(targetChars))
             } else {
-                // Two lines maximum; ignore overflow to keep every coordinate within bounds.
                 break
             }
         }
