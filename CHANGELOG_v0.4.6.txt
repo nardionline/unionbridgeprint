@@ -1,0 +1,5 @@
+Unionline Bridge Android v0.4.6
+- TSPL2 layout and price handling retained unchanged from v0.4.5.
+- TSPL title and SKU use smaller font size 2.
+- Added dashed title separator as TEXT hyphens (not TSPL BAR command).
+- TSPL barcode dimensions and Bluetooth/ESC-POS code left unchanged.

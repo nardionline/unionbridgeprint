@@ -92,10 +92,13 @@ object CommandBuilders {
         command.append("GAP 2 mm,0\r\n")
         command.append("DENSITY 8\r\n")
         command.append("CLS\r\n")
-        if (first.isNotBlank()) command.append("TEXT 4,13,\"3\",0,1,1,\"$first\"\r\n")
-        if (second.isNotBlank()) command.append("TEXT 4,35,\"3\",0,1,1,\"$second\"\r\n")
+        // Smaller title and SKU font than the original WinDev baseline.
+        if (first.isNotBlank()) command.append("TEXT 4,13,\"2\",0,1,1,\"$first\"\r\n")
+        if (second.isNotBlank()) command.append("TEXT 4,35,\"2\",0,1,1,\"$second\"\r\n")
+        // Dashed separator is printed as ordinary text, not the BAR drawing command.
+        command.append("TEXT 4,57,\"1\",0,1,1,\"------------------\"\r\n")
         if (price.isNotBlank()) command.append("TEXT 120,70,\"2\",0,2,2,\"${price} L\"\r\n")
-        if (sku.isNotBlank()) command.append("TEXT 4,120,\"3\",0,1,1,\"$sku\"\r\n")
+        if (sku.isNotBlank()) command.append("TEXT 4,120,\"2\",0,1,1,\"$sku\"\r\n")
         if (barcode.isNotBlank()) command.append("BARCODE 40,150,\"128\",60,1,0,2,2,\"$barcode\"\r\n")
         command.append("PRINT ${copies.coerceIn(1,100)}\r\n")
         return command.toString().toByteArray(Charsets.US_ASCII)
