@@ -97,7 +97,7 @@ object CommandBuilders {
         if (second.isNotBlank()) command.append("TEXT 12,42,\"2\",0,1,1,\"$second\"\r\n")
         // Dashed separator is printed as ordinary text, not the BAR drawing command.
         command.append("TEXT 12,64,\"1\",0,1,1,\"----------------------------------\"\r\n")
-        if (price.isNotBlank()) command.append("TEXT 120,76,\"2\",0,2,1,\"${price} L\"\r\n")
+        if (price.isNotBlank()) command.append("TEXT 120,70,\"2\",0,2,2,\"${price} L\"\r\n")
         if (sku.isNotBlank()) command.append("TEXT 12,120,\"2\",0,1,1,\"$sku\"\r\n")
         if (barcode.isNotBlank()) command.append("BARCODE 40,150,\"128\",54,1,0,2,2,\"$barcode\"\r\n")
         command.append("PRINT ${copies.coerceIn(1,100)}\r\n")

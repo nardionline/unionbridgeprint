@@ -1,0 +1,6 @@
+Unionline Bridge Android v0.4.9
+- TSPL only: title moved slightly down and given 12-dot left margin.
+- TSPL separator moved with title and shortened to preserve right margin.
+- TSPL price reduced from 2x2 to 1x1 and repositioned.
+- TSPL SKU left margin increased to 12 dots.
+- TSPL2, barcode dimensions/position, Bluetooth, and ESC/POS unchanged.

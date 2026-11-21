@@ -1,0 +1,4 @@
+Unionline Bridge Android v0.5.0
+- TSPL only: restored price text size to 2x2 and adjusted its origin to the prior balanced position.
+- All other TSPL layout values remain from v0.4.9.
+- TSPL2, barcode, Bluetooth, and ESC/POS unchanged.
