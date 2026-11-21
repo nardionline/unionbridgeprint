@@ -16,7 +16,7 @@ object CommandBuilders {
         // Keep every text field inside the 320-dot printable width.
         val w = label.widthMm
         val h = label.heightMm
-        fun clean(s: String) = s.replace("\"", "'").replace("\r", " ").replace("\n", " ").trim()
+            .replace("\"", "").trim()
 
         val company = clean(label.company).take(20)
         val name = clean(label.name)
@@ -81,7 +81,7 @@ object CommandBuilders {
     private fun tsplWinDev(label: LabelPayload, copies: Int): ByteArray {
         fun clean(value: String): String = value
             .replace("\\r", " ").replace("\\n", " ")
-            .replace("\\"", "").trim()
+            .replace("\"", "").trim()
             .replace(Regex("[\\u00A0\\u202F\\u2009\\u2007]"), ",")
             .replace("，", ",")
             .filter { it.code in 32..126 }
@@ -115,7 +115,7 @@ object CommandBuilders {
         // Limit both lines to the printable width. The old implementation put the entire
         // remainder of a long name on line 2, making centeredX() coerce an invalid range
         // and crashing the app when the test-label button was pressed.
-        val normalized = value.replace("\r", " ").replace("\n", " ").trim()
+            .replace("\"", "").trim()
             .replace(Regex("\\s+"), " ")
         if (normalized.isEmpty()) return "" to ""
         val words = normalized.split(' ')
