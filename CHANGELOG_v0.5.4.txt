@@ -1,0 +1,5 @@
+Unionline Bridge Android v0.5.4
+- Restored visible native radio buttons for TSPL and TSPL2 selection.
+- Persisted protocol selection through the existing label_protocol preference.
+- Added visible symbols to label/receipt printer sections, status, refresh/save, and test actions.
+- Printer discovery, Bluetooth transport, TSPL/TSPL2 command generation, and ESC/POS logic unchanged.

@@ -29,7 +29,8 @@ class MainActivity : Activity() {
     private lateinit var status: TextView
     private lateinit var labelSpinner: Spinner
     private lateinit var receiptSpinner: Spinner
-    private lateinit var protocolSpinner: Spinner
+    private lateinit var protocolGroup: RadioGroup
+    private var tsplRadioId: Int = View.NO_ID
     private lateinit var devices: List<android.bluetooth.BluetoothDevice>
     private var pendingUri: Uri? = null
     private val adapter: BluetoothAdapter? by lazy {
@@ -155,8 +156,8 @@ class MainActivity : Activity() {
             background = rounded(0xFFE6F5EC.toInt(), 16, 0xFFC8E8D4.toInt(), dp(1))
         }
         statusCard.addView(TextView(this).apply {
-            text = "●"
-            textSize = 18f
+            text = "✓"
+            textSize = 20f
             setTextColor(0xFF16834A.toInt())
             layoutParams = LinearLayout.LayoutParams(dp(28), -2)
         })
@@ -177,7 +178,7 @@ class MainActivity : Activity() {
             elevation = dp(1).toFloat()
         }
         labelCard.addView(TextView(this).apply {
-            text = "PRINTERI I ETIKETAVE"
+            text = "▣   PRINTERI I ETIKETAVE"
             textSize = 12f
             letterSpacing = 0.05f
             typeface = android.graphics.Typeface.DEFAULT_BOLD
@@ -193,19 +194,52 @@ class MainActivity : Activity() {
         labelSpinner.background = rounded(0xFFF7F8FA.toInt(), 12, 0xFFD9DFE8.toInt(), dp(1))
         labelCard.addView(labelSpinner, LinearLayout.LayoutParams(-1, dp(48)))
         val protocolLabel = TextView(this).apply {
-            text = "PROTOKOLLI"
+            text = "PROTOKOLLI I PRINTIMIT"
             textSize = 10f
             letterSpacing = 0.06f
             typeface = android.graphics.Typeface.DEFAULT_BOLD
             setTextColor(muted)
-            setPadding(dp(2), dp(10), 0, dp(2))
+            setPadding(dp(2), dp(10), 0, dp(5))
         }
         labelCard.addView(protocolLabel)
-        protocolSpinner = Spinner(this)
-        protocolSpinner.background = rounded(0xFFF7F8FA.toInt(), 12, 0xFFD9DFE8.toInt(), dp(1))
-        protocolSpinner.adapter = readableSpinnerAdapter(listOf("TSPL", "TSPL2"))
-        protocolSpinner.setSelection(if (prefs.getString("label_protocol", "tspl2") == "tspl") 0 else 1)
-        labelCard.addView(protocolSpinner, LinearLayout.LayoutParams(-1, dp(46)))
+        protocolGroup = RadioGroup(this).apply {
+            orientation = RadioGroup.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(4), dp(3), dp(4), dp(3))
+            background = rounded(0xFFF3F5F8.toInt(), 13, 0xFFD9DFE8.toInt(), dp(1))
+        }
+        val savedProtocol = prefs.getString("label_protocol", "tspl2")
+        val tsplRadio = RadioButton(this).apply {
+            id = View.generateViewId()
+            text = "TSPL"
+            textSize = 15f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(dark)
+            buttonTintList = android.content.res.ColorStateList(
+                arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
+                intArrayOf(red, 0xFF8A94A5.toInt())
+            )
+            setPadding(dp(8), dp(7), dp(8), dp(7))
+            layoutParams = RadioGroup.LayoutParams(0, dp(46), 1f)
+        }
+        tsplRadioId = tsplRadio.id
+        val tspl2Radio = RadioButton(this).apply {
+            id = View.generateViewId()
+            text = "TSPL2"
+            textSize = 15f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(dark)
+            buttonTintList = android.content.res.ColorStateList(
+                arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
+                intArrayOf(red, 0xFF8A94A5.toInt())
+            )
+            setPadding(dp(8), dp(7), dp(8), dp(7))
+            layoutParams = RadioGroup.LayoutParams(0, dp(46), 1f)
+        }
+        protocolGroup.addView(tsplRadio)
+        protocolGroup.addView(tspl2Radio)
+        protocolGroup.check(if (savedProtocol == "tspl") tsplRadio.id else tspl2Radio.id)
+        labelCard.addView(protocolGroup, LinearLayout.LayoutParams(-1, dp(54)))
         content.addView(labelCard, spacedParams(bottom = 12))
 
         // Receipt printer card
@@ -216,7 +250,7 @@ class MainActivity : Activity() {
             elevation = dp(1).toFloat()
         }
         receiptCard.addView(TextView(this).apply {
-            text = "PRINTERI I FATURAVE"
+            text = "▤   PRINTERI I FATURAVE"
             textSize = 12f
             letterSpacing = 0.05f
             typeface = android.graphics.Typeface.DEFAULT_BOLD
@@ -234,9 +268,9 @@ class MainActivity : Activity() {
         content.addView(receiptCard, spacedParams(bottom = 14))
 
         val actionRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        actionRow.addView(actionButton("↻  Rifresko", false) { refreshDevices() },
+        actionRow.addView(actionButton("⟳  Rifresko", false) { refreshDevices() },
             LinearLayout.LayoutParams(0, dp(50), 1f).apply { marginEnd = dp(6) })
-        actionRow.addView(actionButton("✓  Ruaj", false) {
+        actionRow.addView(actionButton("▣  Ruaj", false) {
             saveSelections()
             prefs.edit().putString("label_protocol", selectedProtocol()).apply()
             showStatus("Konfigurimi u ruajt.")
@@ -244,9 +278,9 @@ class MainActivity : Activity() {
         content.addView(actionRow, spacedParams(bottom = 10))
 
         val testRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        testRow.addView(actionButton("Testo etiketën 40×30", true) { testLabel() },
+        testRow.addView(actionButton("▧  Testo etiketën 40×30", true) { testLabel() },
             LinearLayout.LayoutParams(0, dp(58), 1f).apply { marginEnd = dp(6) })
-        testRow.addView(actionButton("Testo faturën", false) { testReceipt() },
+        testRow.addView(actionButton("▤  Testo faturën", false) { testReceipt() },
             LinearLayout.LayoutParams(0, dp(58), 1f).apply { marginStart = dp(6) })
         content.addView(testRow, spacedParams(bottom = 12))
 
@@ -394,11 +428,11 @@ class MainActivity : Activity() {
     }
 
     private fun selectedProtocol(): String =
-        if (::protocolSpinner.isInitialized && protocolSpinner.selectedItemPosition == 0) "tspl" else "tspl2"
+        if (::protocolGroup.isInitialized && protocolGroup.checkedRadioButtonId == tsplRadioId) "tspl" else "tspl2"
 
     private fun saveSelections() {
         val editor = prefs.edit()
-        if (::protocolSpinner.isInitialized) editor.putString("label_protocol", selectedProtocol())
+        if (::protocolGroup.isInitialized) editor.putString("label_protocol", selectedProtocol())
         selectedMac(labelSpinner)?.let { editor.putString("label_mac", it) }
         selectedMac(receiptSpinner)?.let { editor.putString("receipt_mac", it) }
         editor.apply()
