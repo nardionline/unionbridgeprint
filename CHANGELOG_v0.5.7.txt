@@ -1,0 +1,1 @@
+Unionline Bridge Android v0.5.7\n- TSPL / MHT-P29L: disable printer-generated human-readable barcode text.\n- Print the barcode digits separately with a TSPL TEXT command to avoid firmware rendering the closing quote.\n- Barcode payload sanitization, barcode position/height/module width, title, price, SKU, TSPL2, Bluetooth, and ESC/POS unchanged.\n
