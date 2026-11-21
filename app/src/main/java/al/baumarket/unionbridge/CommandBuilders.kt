@@ -9,15 +9,10 @@ object CommandBuilders {
     // TSPL uses millimetres and is widely shared by TSPL/TSPL2-compatible label printers.
     // 203 dpi is approximately 8 dots/mm.
     fun tspl(label: LabelPayload, copies: Int): ByteArray {
-        return if (label.language.equals("tspl", ignoreCase = true)) {
-            tsplWinDev(label, copies)
-        } else {
-            tspl2(label, copies)
+        if (label.language.equals("tspl", ignoreCase = true)) {
+            return tsplWinDevBaseline(label, copies)
         }
-    }
-
-    // TSPL2 generator retained unchanged from the previously working build.
-    private fun tspl2(label: LabelPayload, copies: Int): ByteArray {
+        // Keep the existing TSPL2 generator unchanged.
         val w = label.widthMm
         val h = label.heightMm
         fun clean(s: String) = s.replace("\"", "'").replace("\r", " ").replace("\n", " ").trim()
@@ -55,11 +50,11 @@ object CommandBuilders {
     }
 
     /**
-     * MHT-P29L profile copied from the user's proven WinDev Mobile TSPL routine.
-     * Only an additional BAR command is used for the requested separator under title.
-     * Bluetooth transport is deliberately not changed.
+     * First-pass TSPL baseline: commands/coordinates/command order copied from
+     * the user's known-working WinDev Mobile routine. No separator BAR and no
+     * TSPL2 layout transformations in this test build.
      */
-    private fun tsplWinDev(label: LabelPayload, copies: Int): ByteArray {
+    private fun tsplWinDevBaseline(label: LabelPayload, copies: Int): ByteArray {
         fun clean(value: String): String = value
             .replace("\"", "")
             .replace("\r", " ")
@@ -70,8 +65,8 @@ object CommandBuilders {
             .filter { it.code in 32..126 }
 
         val name = clean(label.name)
-        val firstLine = name.take(25)
-        val secondLine = if (name.length > 25) name.drop(25).take(25) else ""
+        val first = name.take(25)
+        val second = if (name.length > 25) name.drop(25).take(25) else ""
         val price = clean(label.price)
             .replace(Regex("(?i)\\s*(lek|l)\\s*$"), "")
             .trim()
@@ -84,23 +79,11 @@ object CommandBuilders {
         command.append("GAP 2 mm,0\r\n")
         command.append("DENSITY 8\r\n")
         command.append("CLS\r\n")
-
-        if (firstLine.isNotBlank()) {
-            command.append("TEXT 4,13,\"3\",0,1,1,\"$firstLine\"\r\n")
-        }
-        if (secondLine.isNotBlank()) {
-            command.append("TEXT 4,35,\"3\",0,1,1,\"$secondLine\"\r\n")
-        }
-        command.append("BAR 4,60,312,1\r\n")
-        if (price.isNotBlank()) {
-            command.append("TEXT 120,70,\"2\",0,2,2,\"${price} L\"\r\n")
-        }
-        if (sku.isNotBlank()) {
-            command.append("TEXT 4,120,\"3\",0,1,1,\"$sku\"\r\n")
-        }
-        if (barcode.isNotBlank()) {
-            command.append("BARCODE 40,150,\"128\",60,1,0,2,2,\"$barcode\"\r\n")
-        }
+        if (first.isNotBlank()) command.append("TEXT 4,13,\"3\",0,1,1,\"$first\"\r\n")
+        if (second.isNotBlank()) command.append("TEXT 4,35,\"3\",0,1,1,\"$second\"\r\n")
+        if (price.isNotBlank()) command.append("TEXT 120,70,\"2\",0,2,2,\"${price} L\"\r\n")
+        if (sku.isNotBlank()) command.append("TEXT 4,120,\"3\",0,1,1,\"$sku\"\r\n")
+        if (barcode.isNotBlank()) command.append("BARCODE 40,150,\"128\",60,1,0,2,2,\"$barcode\"\r\n")
         command.append("PRINT ${copies.coerceIn(1,100)}\r\n")
         return command.toString().toByteArray(Charsets.US_ASCII)
     }
