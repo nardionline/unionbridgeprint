@@ -1,0 +1,4 @@
+Unionline Bridge Android v0.4.8
+- TSPL only: barcode height reduced from 60 to 54 dots (~10%).
+- Barcode module width, position, title, dashed line, price, and SKU unchanged.
+- TSPL2, Bluetooth transport, and ESC/POS unchanged.

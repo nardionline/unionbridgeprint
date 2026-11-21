@@ -1,0 +1,4 @@
+Unionline Bridge Android v0.4.7
+- TSPL only: extended the dashed separator under the title to nearly the full label width.
+- TSPL2 layout unchanged.
+- All other TSPL positions, barcode dimensions, Bluetooth, and ESC/POS unchanged.
