@@ -80,8 +80,8 @@ object CommandBuilders {
      */
     private fun tsplWinDev(label: LabelPayload, copies: Int): ByteArray {
         fun clean(value: String): String = value
-            .replace("\\r", " ").replace("\\n", " ")
-            .replace("\\"", "").trim()
+            .replace("\r", " ").replace("\n", " ")
+            .replace("\"", "").trim()
             .replace(Regex("[\\u00A0\\u202F\\u2009\\u2007]"), ",")
             .replace("，", ",")
             .filter { it.code in 32..126 }
