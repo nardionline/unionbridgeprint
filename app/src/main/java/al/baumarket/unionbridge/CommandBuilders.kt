@@ -81,7 +81,7 @@ object CommandBuilders {
     private fun tsplWinDev(label: LabelPayload, copies: Int): ByteArray {
         fun clean(value: String): String = value
             .replace("\\r", " ").replace("\\n", " ")
-            .replace("\"", "").trim()
+            .replace("\\"", "").trim()
             .replace(Regex("[\\u00A0\\u202F\\u2009\\u2007]"), ",")
             .replace("，", ",")
             .filter { it.code in 32..126 }
@@ -103,11 +103,9 @@ object CommandBuilders {
         b.append("CLS\\r\\n")
         if (first.isNotBlank()) b.append("TEXT 4,13,\\\"3\\\",0,1,1,\\\"$first\\\"\\r\\n")
         if (second.isNotBlank()) b.append("TEXT 4,35,\\\"3\\\",0,1,1,\\\"$second\\\"\\r\\n")
-        // Thin separator directly below the title, before the price.
-        b.append("BAR 4,58,300,1\\r\\n")
-        if (price.isNotBlank()) b.append("TEXT 120,70,\\\"2\\\",0,1,1,\\\"$price L\\\"\\r\\n")
+        if (price.isNotBlank()) b.append("TEXT 120,70,\\\"2\\\",0,2,2,\\\"$price L\\\"\\r\\n")
         if (sku.isNotBlank()) b.append("TEXT 4,120,\\\"3\\\",0,1,1,\\\"$sku\\\"\\r\\n")
-        if (barcode.isNotBlank()) b.append("BARCODE 40,150,\\\"128\\\",50,1,0,1,2,\\\"$barcode\\\"\\r\\n")
+        if (barcode.isNotBlank()) b.append("BARCODE 40,150,\\\"128\\\",60,1,0,2,2,\\\"$barcode\\\"\\r\\n")
         b.append("PRINT ${copies.coerceIn(1,100)}\\r\\n")
         return b.toString().toByteArray(Charsets.US_ASCII)
     }
