@@ -96,107 +96,193 @@ class MainActivity : Activity() {
     }
 
     private fun buildUi() {
-        val pageBg = 0xFFF3F5F9.toInt()
-        val red = 0xFFBE1622.toInt()
-        val dark = 0xFF172033.toInt()
-        val muted = 0xFF667085.toInt()
-        val root = LinearLayout(this).apply {
+        val pageBg = 0xFFF2F4F8.toInt()
+        val red = 0xFFB91524.toInt()
+        val dark = 0xFF182230.toInt()
+        val muted = 0xFF687386.toInt()
+        val white = 0xFFFFFFFF.toInt()
+
+        val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(12), dp(8), dp(12), dp(8))
+            setPadding(dp(14), dp(14), dp(14), dp(18))
             setBackgroundColor(pageBg)
+        }
+        val scroll = ScrollView(this).apply {
+            isFillViewport = true
+            setBackgroundColor(pageBg)
+            addView(content)
         }
 
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(12), dp(10), dp(12), dp(10))
-            background = rounded(red, 14)
+            setPadding(dp(16), dp(16), dp(16), dp(16))
+            background = android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.LEFT_RIGHT,
+                intArrayOf(0xFF9F1020.toInt(), 0xFFD21E30.toInt())
+            ).apply { cornerRadius = dp(20).toFloat() }
+            elevation = dp(3).toFloat()
         }
         header.addView(TextView(this).apply {
             text = "BV"
-            textSize = 21f
-            setTextColor(0xFFFFFFFF.toInt())
+            textSize = 20f
+            setTextColor(white)
             typeface = android.graphics.Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
-            background = rounded(0x33FFFFFF, 12)
-            layoutParams = LinearLayout.LayoutParams(dp(44), dp(44)).apply { marginEnd = dp(10) }
+            background = rounded(0x33FFFFFF, 14)
+            layoutParams = LinearLayout.LayoutParams(dp(52), dp(52)).apply { marginEnd = dp(14) }
         })
         val brand = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         brand.addView(TextView(this).apply {
-            text = "Unionline Bridge"; textSize = 19f
+            text = "Unionline Bridge"
+            textSize = 21f
             typeface = android.graphics.Typeface.DEFAULT_BOLD
-            setTextColor(0xFFFFFFFF.toInt())
+            setTextColor(white)
         })
         brand.addView(TextView(this).apply {
-            text = "Bluetooth · TSPL / TSPL2 · ESC/POS"; textSize = 11f
-            setTextColor(0xFFFFE7E9.toInt())
+            text = "PRINT SERVICE  ·  BLUETOOTH"
+            textSize = 10f
+            letterSpacing = 0.08f
+            setTextColor(0xFFFFE6E9.toInt())
         })
         header.addView(brand, LinearLayout.LayoutParams(0, -2, 1f))
-        root.addView(header)
+        content.addView(header, spacedParams(bottom = 14))
 
-        val statusRow = LinearLayout(this).apply {
+        val statusCard = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(10), dp(7), dp(10), dp(7))
-            background = rounded(0xFFE5F6EB.toInt(), 12)
+            setPadding(dp(14), dp(13), dp(14), dp(13))
+            background = rounded(0xFFE6F5EC.toInt(), 16, 0xFFC8E8D4.toInt(), dp(1))
         }
-        statusRow.addView(TextView(this).apply {
-            text = "●"; textSize = 17f; setTextColor(0xFF16803C.toInt())
+        statusCard.addView(TextView(this).apply {
+            text = "●"
+            textSize = 18f
+            setTextColor(0xFF16834A.toInt())
             layoutParams = LinearLayout.LayoutParams(dp(28), -2)
         })
         status = TextView(this).apply {
             text = "Bridge aktiv · Gati për printim"
-            textSize = 12f; setTextColor(dark)
+            textSize = 13f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(0xFF195B39.toInt())
         }
-        statusRow.addView(status)
-        root.addView(statusRow, spacedParams(bottom = 8))
+        statusCard.addView(status)
+        content.addView(statusCard, spacedParams(bottom = 16))
 
-        // Two compact printer rows: selector and protocol fit on the same screen.
-        root.addView(TextView(this).apply {
-            text = "ETIKETA"; textSize = 11f; typeface = android.graphics.Typeface.DEFAULT_BOLD
+        // Label printer card
+        val labelCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(14), dp(16), dp(14))
+            background = rounded(white, 18, 0xFFE0E5ED.toInt(), dp(1))
+            elevation = dp(1).toFloat()
+        }
+        labelCard.addView(TextView(this).apply {
+            text = "PRINTERI I ETIKETAVE"
+            textSize = 12f
+            letterSpacing = 0.05f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(red)
+        })
+        labelCard.addView(TextView(this).apply {
+            text = "Zgjidh printerin dhe protokollin e etiketës"
+            textSize = 11f
             setTextColor(muted)
+            setPadding(0, dp(3), 0, dp(7))
         })
         labelSpinner = Spinner(this)
-        root.addView(labelSpinner, LinearLayout.LayoutParams(-1, dp(44)))
+        labelSpinner.background = rounded(0xFFF7F8FA.toInt(), 12, 0xFFD9DFE8.toInt(), dp(1))
+        labelCard.addView(labelSpinner, LinearLayout.LayoutParams(-1, dp(48)))
+        val protocolLabel = TextView(this).apply {
+            text = "PROTOKOLLI"
+            textSize = 10f
+            letterSpacing = 0.06f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(muted)
+            setPadding(dp(2), dp(10), 0, dp(2))
+        }
+        labelCard.addView(protocolLabel)
         protocolSpinner = Spinner(this)
-        val protocolAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, listOf("TSPL", "TSPL2"))
-        protocolAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        protocolSpinner.adapter = protocolAdapter
+        protocolSpinner.background = rounded(0xFFF7F8FA.toInt(), 12, 0xFFD9DFE8.toInt(), dp(1))
+        protocolSpinner.adapter = readableSpinnerAdapter(listOf("TSPL", "TSPL2"))
         protocolSpinner.setSelection(if (prefs.getString("label_protocol", "tspl2") == "tspl") 0 else 1)
-        root.addView(protocolSpinner, LinearLayout.LayoutParams(-1, dp(40)))
+        labelCard.addView(protocolSpinner, LinearLayout.LayoutParams(-1, dp(46)))
+        content.addView(labelCard, spacedParams(bottom = 12))
 
-        root.addView(TextView(this).apply {
-            text = "FATURA"; textSize = 11f; typeface = android.graphics.Typeface.DEFAULT_BOLD
-            setTextColor(muted); setPadding(0, dp(4), 0, 0)
+        // Receipt printer card
+        val receiptCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(14), dp(16), dp(14))
+            background = rounded(white, 18, 0xFFE0E5ED.toInt(), dp(1))
+            elevation = dp(1).toFloat()
+        }
+        receiptCard.addView(TextView(this).apply {
+            text = "PRINTERI I FATURAVE"
+            textSize = 12f
+            letterSpacing = 0.05f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(red)
+        })
+        receiptCard.addView(TextView(this).apply {
+            text = "Për printimin e faturave me ESC/POS"
+            textSize = 11f
+            setTextColor(muted)
+            setPadding(0, dp(3), 0, dp(7))
         })
         receiptSpinner = Spinner(this)
-        root.addView(receiptSpinner, LinearLayout.LayoutParams(-1, dp(44)))
+        receiptSpinner.background = rounded(0xFFF7F8FA.toInt(), 12, 0xFFD9DFE8.toInt(), dp(1))
+        receiptCard.addView(receiptSpinner, LinearLayout.LayoutParams(-1, dp(48)))
+        content.addView(receiptCard, spacedParams(bottom = 14))
 
         val actionRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        actionRow.addView(actionButton("↻ Rifresko", false) { refreshDevices() },
-            LinearLayout.LayoutParams(0, dp(44), 1f).apply { marginEnd = dp(4) })
-        actionRow.addView(actionButton("Ruaj", false) {
+        actionRow.addView(actionButton("↻  Rifresko", false) { refreshDevices() },
+            LinearLayout.LayoutParams(0, dp(50), 1f).apply { marginEnd = dp(6) })
+        actionRow.addView(actionButton("✓  Ruaj", false) {
             saveSelections()
             prefs.edit().putString("label_protocol", selectedProtocol()).apply()
             showStatus("Konfigurimi u ruajt.")
-        }, LinearLayout.LayoutParams(0, dp(44), 1f).apply { marginStart = dp(4) })
-        root.addView(actionRow, spacedParams(bottom = 8, top = 0))
+        }, LinearLayout.LayoutParams(0, dp(50), 1f).apply { marginStart = dp(6) })
+        content.addView(actionRow, spacedParams(bottom = 10))
 
         val testRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
         testRow.addView(actionButton("Testo etiketën 40×30", true) { testLabel() },
-            LinearLayout.LayoutParams(0, dp(54), 1f).apply { marginEnd = dp(4) })
+            LinearLayout.LayoutParams(0, dp(58), 1f).apply { marginEnd = dp(6) })
         testRow.addView(actionButton("Testo faturën", false) { testReceipt() },
-            LinearLayout.LayoutParams(0, dp(54), 1f).apply { marginStart = dp(4) })
-        root.addView(testRow, spacedParams(bottom = 8))
+            LinearLayout.LayoutParams(0, dp(58), 1f).apply { marginStart = dp(6) })
+        content.addView(testRow, spacedParams(bottom = 12))
 
         val footer = TextView(this).apply {
-            text = "Printimet nga Unionline · Bridge në pritje"
-            textSize = 11f; setTextColor(muted); gravity = Gravity.CENTER
-            setPadding(0, dp(4), 0, dp(2))
+            text = "UNIONLINE  ·  PRINT BRIDGE"
+            textSize = 10f
+            letterSpacing = 0.08f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(muted)
+            gravity = Gravity.CENTER
+            setPadding(0, dp(6), 0, dp(4))
         }
-        root.addView(footer)
-        setContentView(root)
+        content.addView(footer)
+        setContentView(scroll)
     }
+
+    private fun readableSpinnerAdapter(items: List<String>): ArrayAdapter<String> =
+        object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items) {
+            private fun style(view: View): View {
+                (view as? TextView)?.apply {
+                    textSize = 16f
+                    setTextColor(0xFF172033.toInt())
+                    typeface = android.graphics.Typeface.DEFAULT_BOLD
+                    setPadding(dp(8), dp(8), dp(8), dp(8))
+                }
+                return view
+            }
+
+            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View =
+                style(super.getView(position, convertView, parent))
+
+            override fun getDropDownView(position: Int, convertView: View?, parent: android.view.ViewGroup): View =
+                style(super.getDropDownView(position, convertView, parent))
+        }.also {
+            it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
 
     private fun printerCard(symbol: String, title: String, tint: Int) =
         LinearLayout(this).apply {
@@ -225,9 +311,11 @@ class MainActivity : Activity() {
         text = label
         isAllCaps = false
         textSize = 14f
+        typeface = android.graphics.Typeface.DEFAULT_BOLD
         gravity = Gravity.CENTER
-        setTextColor(if (primary) 0xFFFFFFFF.toInt() else 0xFF172033.toInt())
-        background = rounded(if (primary) 0xFFBE1622.toInt() else 0xFFE6EAF0.toInt(), 16)
+        minHeight = dp(48)
+        setTextColor(if (primary) 0xFFFFFFFF.toInt() else 0xFF263244.toInt())
+        background = if (primary) rounded(0xFFB91524.toInt(), 16) else rounded(0xFFE8ECF2.toInt(), 16, 0xFFD5DCE6.toInt(), dp(1))
         stateListAnimator = null
         setOnClickListener { action() }
     }
@@ -281,13 +369,8 @@ class MainActivity : Activity() {
             devices = BluetoothPrinter.pairedDevices(a)
             val labels = devices.map { "${it.name ?: "Printer pa emër"} (${it.address})" }
             val list = if (labels.isEmpty()) listOf("Nuk ka printerë të çiftuar") else labels
-            val spAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, list).also {
-                it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
-            labelSpinner.adapter = spAdapter
-            receiptSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, list).also {
-                it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
+            labelSpinner.adapter = readableSpinnerAdapter(list)
+            receiptSpinner.adapter = readableSpinnerAdapter(list)
             selectMac(labelSpinner, prefs.getString("label_mac", null))
             selectMac(receiptSpinner, prefs.getString("receipt_mac", null))
             // Persist the current selections (or the first paired device if this is the first setup).

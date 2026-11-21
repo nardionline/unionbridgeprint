@@ -1,7 +1,5 @@
 Unionline Bridge Android v0.5.2
-- Based directly on v0.4.8.
-- TSPL price changed from 2x2 to 2x1.
-- TSPL title moved slightly down; title and SKU left margin set to 12 dots.
-- Dashed separator moved with title and retains left/right margins.
-- TSPL barcode command retained exactly from v0.4.8.
-- TSPL2 implementation and layout untouched.
+- UI only: moved header/title lower with increased top padding.
+- Increased printer/protocol selector text size and contrast.
+- Increased button size, boldness, contrast, and secondary button border.
+- Printer protocols, Bluetooth, TSPL/TSPL2 generators, and ESC/POS print data logic unchanged.

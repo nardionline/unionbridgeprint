@@ -1,0 +1,6 @@
+Unionline Bridge Android v0.5.3
+- UI redesign: gradient brand header, clearer status panel, separate white printer cards.
+- Added explanatory labels for label printer, protocol, and receipt printer.
+- Improved spacing, rounded surfaces, contrast, and button hierarchy.
+- Wrapped screen in ScrollView for smaller displays.
+- Bluetooth, TSPL/TSPL2 generators, ESC/POS data generation and print flow unchanged.
