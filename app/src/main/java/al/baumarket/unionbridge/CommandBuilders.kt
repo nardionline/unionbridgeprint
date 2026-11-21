@@ -100,6 +100,29 @@ object CommandBuilders {
     }
 
 
+    private fun splitTitle(value: String, targetChars: Int): Pair<String, String> {
+        val normalized = value.replace("\r", " ").replace("\n", " ").trim()
+            .replace(Regex("\\s+"), " ")
+        if (normalized.isEmpty()) return "" to ""
+        val words = normalized.split(' ')
+        val first = StringBuilder()
+        val second = StringBuilder()
+        var current = first
+        for (word in words) {
+            if (current.isEmpty()) {
+                current.append(word.take(targetChars))
+            } else if (current.length + 1 + word.length <= targetChars) {
+                current.append(' ').append(word)
+            } else if (current === first && second.isEmpty()) {
+                current = second
+                current.append(word.take(targetChars))
+            } else {
+                break
+            }
+        }
+        return first.toString() to second.toString()
+    }
+
     fun escPos(receipt: ReceiptPayload, copies: Int): ByteArray {
         val out = ByteArrayOutputStream()
         fun bytes(vararg values: Int) { values.forEach { out.write(it) } }
