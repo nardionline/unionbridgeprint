@@ -1,0 +1,4 @@
+Unionline Bridge Android v0.5.6
+- TSPL WinDev only: sanitize barcode payload to letters, digits, hyphen, dot, underscore, and slash.
+- Removes quote characters and other invalid payload characters that could appear after the printed barcode text.
+- TSPL2, label layout, Bluetooth, and ESC/POS unchanged.

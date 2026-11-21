@@ -84,7 +84,7 @@ object CommandBuilders {
             .replace(Regex("(?i)\\s*(lek|l)\\s*$"), "")
             .trim()
         val sku = clean(label.sku)
-        val barcode = clean(label.barcode).replace(" ", "")
+        val barcode = clean(label.barcode).filter { it.isLetterOrDigit() || it in "-._/" }.take(20)
 
         val command = StringBuilder()
         command.append("SIZE 40 mm,30 mm\r\n")
