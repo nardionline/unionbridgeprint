@@ -1,0 +1,5 @@
+Unionline Bridge Android v0.5.1
+- TSPL only: moved price down 12 dots; kept price size 2x2.
+- Moved SKU down 12 dots.
+- Moved barcode down 10 dots and shortened height from 54 to 48 dots.
+- TSPL title/separator, TSPL2, Bluetooth, and ESC/POS unchanged.
