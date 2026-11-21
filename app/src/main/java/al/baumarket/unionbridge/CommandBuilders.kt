@@ -6,21 +6,12 @@ import java.text.Normalizer
 import kotlin.math.roundToInt
 
 object CommandBuilders {
-    /**
-     * Select the configured label language. TSPL2 is backward-compatible with
-     * the common TSPL command subset used by this 40x30 mm layout; keeping the
-     * selection explicit lets us add printer-specific TSPL2 commands later
-     * without changing the Web payload format.
-     */
-    fun label(label: LabelPayload, copies: Int): ByteArray =
-        when (label.language.lowercase()) {
-            "tspl", "tspl2" -> tspl(label, copies)
-            else -> throw IllegalArgumentException("Protokoll etikete i panjohur: ${label.language}")
-        }
-
     // TSPL uses millimetres and is widely shared by TSPL/TSPL2-compatible label printers.
     // 203 dpi is approximately 8 dots/mm.
     fun tspl(label: LabelPayload, copies: Int): ByteArray {
+        if (label.language.equals("tspl", ignoreCase = true)) {
+            return tsplWinDev(label, copies)
+        }
         // Conservative layout for 40 x 30 mm labels at 203 dpi (~8 dots/mm).
         // Keep every text field inside the 320-dot printable width.
         val w = label.widthMm
@@ -78,6 +69,44 @@ object CommandBuilders {
             b.append("TEXT $barcodeTextX,171,\"1\",0,1,1,\"$barcode\"\r\n")
         }
         b.append("PRINT ${copies.coerceIn(1,100)},1\r\n")
+        return b.toString().toByteArray(Charsets.US_ASCII)
+    }
+
+
+    /**
+     * MHT-P29L TSPL profile ported from the user's proven WinDev Mobile routine.
+     * Keep command order, coordinates, GAP, DENSITY and CODE128 settings aligned
+     * with the known-good 40x30 mm output.
+     */
+    private fun tsplWinDev(label: LabelPayload, copies: Int): ByteArray {
+        fun clean(value: String): String = value
+            .replace("\\r", " ").replace("\\n", " ")
+            .replace("\\"", "").trim()
+            .replace(Regex("[\\u00A0\\u202F\\u2009\\u2007]"), ",")
+            .replace("，", ",")
+            .filter { it.code in 32..126 }
+
+        val name = clean(label.name)
+        val first = name.take(25)
+        val second = if (name.length > 25) name.drop(25).take(25) else ""
+        val price = clean(label.price)
+            .replace(Regex("(?i)\\s*lek\\s*$"), "")
+            .removeSuffix(" L").trim()
+        val sku = clean(label.sku)
+        val barcode = clean(label.barcode).replace(" ", "")
+
+        val b = StringBuilder()
+        b.append("SIZE 40 mm,30 mm\\r\\n")
+        b.append("DIRECTION 0\\r\\n")
+        b.append("GAP 2 mm,0\\r\\n")
+        b.append("DENSITY 8\\r\\n")
+        b.append("CLS\\r\\n")
+        if (first.isNotBlank()) b.append("TEXT 4,13,\\\"3\\\",0,1,1,\\\"$first\\\"\\r\\n")
+        if (second.isNotBlank()) b.append("TEXT 4,35,\\\"3\\\",0,1,1,\\\"$second\\\"\\r\\n")
+        if (price.isNotBlank()) b.append("TEXT 120,70,\\\"2\\\",0,2,2,\\\"$price L\\\"\\r\\n")
+        if (sku.isNotBlank()) b.append("TEXT 4,120,\\\"3\\\",0,1,1,\\\"$sku\\\"\\r\\n")
+        if (barcode.isNotBlank()) b.append("BARCODE 40,150,\\\"128\\\",60,1,0,2,2,\\\"$barcode\\\"\\r\\n")
+        b.append("PRINT ${copies.coerceIn(1,100)}\\r\\n")
         return b.toString().toByteArray(Charsets.US_ASCII)
     }
 
