@@ -1,0 +1,3 @@
+Unionline Bridge v0.3.6
+- Fixed Kotlin string escaping in TSPL text cleaning so assembleDebug can compile.
+- Retains the v0.3.5 compact modern interface and label layout adjustments.
