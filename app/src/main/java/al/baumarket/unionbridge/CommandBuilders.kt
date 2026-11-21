@@ -80,9 +80,9 @@ object CommandBuilders {
      */
     private fun tsplWinDev(label: LabelPayload, copies: Int): ByteArray {
         fun clean(value: String): String = value
-            .replace("\r", " ").replace("\n", " ")
-            .replace("\"", "").trim()
-            .replace(Regex("[\u00A0\u202F\u2009\u2007]"), ",")
+            .replace("\\r", " ").replace("\\n", " ")
+            .replace("\\"", "").trim()
+            .replace(Regex("[\\u00A0\\u202F\\u2009\\u2007]"), ",")
             .replace("，", ",")
             .filter { it.code in 32..126 }
 
@@ -96,17 +96,20 @@ object CommandBuilders {
         val barcode = clean(label.barcode).replace(" ", "")
 
         val b = StringBuilder()
-        b.append("SIZE 40 mm,30 mm\r\n")
-        b.append("DIRECTION 0\r\n")
-        b.append("GAP 2 mm,0\r\n")
-        b.append("DENSITY 8\r\n")
-        b.append("CLS\r\n")
-        if (first.isNotBlank()) b.append("TEXT 4,13,\"3\",0,1,1,\"$first\"\r\n")
-        if (second.isNotBlank()) b.append("TEXT 4,35,\"3\",0,1,1,\"$second\"\r\n")
-        if (price.isNotBlank()) b.append("TEXT 120,70,\"2\",0,2,2,\"$price L\"\r\n")
-        if (sku.isNotBlank()) b.append("TEXT 4,120,\"3\",0,1,1,\"$sku\"\r\n")
-        if (barcode.isNotBlank()) b.append("BARCODE 40,150,\"128\",60,1,0,2,2,\"$barcode\"\r\n")
-        b.append("PRINT ${copies.coerceIn(1,100)}\r\n")
+        b.append("SIZE 40 mm,30 mm\\r\\n")
+        // Match the TSPL2 visual orientation and hierarchy while retaining
+        // the known-good WinDev TSPL command dialect for MHT-P29L.
+        b.append("DIRECTION 1\\r\\n")
+        b.append("GAP 2 mm,0\\r\\n")
+        b.append("DENSITY 8\\r\\n")
+        b.append("CLS\\r\\n")
+        if (first.isNotBlank()) b.append("TEXT 4,13,\\\"3\\\",0,1,1,\\\"$first\\\"\\r\\n")
+        if (second.isNotBlank()) b.append("TEXT 4,35,\\\"3\\\",0,1,1,\\\"$second\\\"\\r\\n")
+        b.append("BAR 4,60,312,1\\r\\n")
+        if (price.isNotBlank()) b.append("TEXT 120,70,\\\"2\\\",0,2,2,\\\"$price L\\\"\\r\\n")
+        if (sku.isNotBlank()) b.append("TEXT 4,120,\\\"3\\\",0,1,1,\\\"$sku\\\"\\r\\n")
+        if (barcode.isNotBlank()) b.append("BARCODE 24,145,\\\"128\\\",68,1,0,3,3,\\\"$barcode\\\"\\r\\n")
+        b.append("PRINT ${copies.coerceIn(1,100)}\\r\\n")
         return b.toString().toByteArray(Charsets.US_ASCII)
     }
 
