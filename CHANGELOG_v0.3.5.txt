@@ -1,0 +1,6 @@
+Unionline Bridge v0.3.5
+- Modernized and compacted the Android interface with grouped printer cards.
+- Added a thin separator line below the TSPL label title.
+- Slightly reduced the price text size.
+- Slightly reduced Code 128 barcode height and width.
+- Preserved the v0.3.4 printing flow, TSPL/TSPL2 selection, and ESC/POS receipt printing.

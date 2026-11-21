@@ -96,105 +96,143 @@ class MainActivity : Activity() {
     }
 
     private fun buildUi() {
-        val pageBg = 0xFFF3F5F9.toInt()
-        val red = 0xFFBE1622.toInt()
-        val dark = 0xFF172033.toInt()
+        val pageBg = 0xFFF2F4F7.toInt()
+        val red = 0xFFB5121B.toInt()
+        val dark = 0xFF182230.toInt()
         val muted = 0xFF667085.toInt()
+        val white = 0xFFFFFFFF.toInt()
+
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(12), dp(8), dp(12), dp(8))
+            setPadding(dp(14), dp(10), dp(14), dp(8))
             setBackgroundColor(pageBg)
         }
 
+        // Compact branded header.
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(12), dp(10), dp(12), dp(10))
-            background = rounded(red, 14)
+            setPadding(dp(14), dp(10), dp(14), dp(10))
+            background = rounded(red, 18)
         }
         header.addView(TextView(this).apply {
             text = "BV"
-            textSize = 21f
-            setTextColor(0xFFFFFFFF.toInt())
+            textSize = 20f
             typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(white)
             gravity = Gravity.CENTER
             background = rounded(0x33FFFFFF, 12)
-            layoutParams = LinearLayout.LayoutParams(dp(44), dp(44)).apply { marginEnd = dp(10) }
+            layoutParams = LinearLayout.LayoutParams(dp(44), dp(44)).apply { marginEnd = dp(12) }
         })
         val brand = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         brand.addView(TextView(this).apply {
-            text = "Unionline Bridge"; textSize = 19f
+            text = "Unionline Bridge"
+            textSize = 19f
             typeface = android.graphics.Typeface.DEFAULT_BOLD
-            setTextColor(0xFFFFFFFF.toInt())
+            setTextColor(white)
         })
         brand.addView(TextView(this).apply {
-            text = "Bluetooth · TSPL / TSPL2 · ESC/POS"; textSize = 11f
-            setTextColor(0xFFFFE7E9.toInt())
+            text = "PRINT SERVICE  ·  BLUETOOTH"
+            textSize = 10f
+            setTextColor(0xFFFFE6E8.toInt())
         })
         header.addView(brand, LinearLayout.LayoutParams(0, -2, 1f))
-        root.addView(header)
+        root.addView(header, spacedParams(bottom = 8))
 
         val statusRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(10), dp(7), dp(10), dp(7))
-            background = rounded(0xFFE5F6EB.toInt(), 12)
+            setPadding(dp(11), dp(7), dp(11), dp(7))
+            background = rounded(0xFFE7F5EC.toInt(), 12)
         }
         statusRow.addView(TextView(this).apply {
-            text = "●"; textSize = 17f; setTextColor(0xFF16803C.toInt())
-            layoutParams = LinearLayout.LayoutParams(dp(28), -2)
+            text = "●"
+            textSize = 15f
+            setTextColor(0xFF16803C.toInt())
+            layoutParams = LinearLayout.LayoutParams(dp(23), -2)
         })
         status = TextView(this).apply {
             text = "Bridge aktiv · Gati për printim"
-            textSize = 12f; setTextColor(dark)
+            textSize = 12f
+            setTextColor(dark)
         }
         statusRow.addView(status)
-        root.addView(statusRow, spacedParams(bottom = 8))
+        root.addView(statusRow, spacedParams(bottom = 9))
 
-        // Two compact printer rows: selector and protocol fit on the same screen.
-        root.addView(TextView(this).apply {
-            text = "ETIKETA"; textSize = 11f; typeface = android.graphics.Typeface.DEFAULT_BOLD
+        fun sectionTitle(value: String) = TextView(this).apply {
+            text = value
+            textSize = 11f
+            letterSpacing = 0.08f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setTextColor(muted)
+        }
+        fun card() = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(12), dp(9), dp(12), dp(9))
+            background = rounded(white, 15, 0xFFE1E6ED.toInt(), dp(1))
+        }
+
+        // Label printer and protocol share one compact row.
+        val labelCard = card()
+        val labelHeading = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        labelHeading.addView(sectionTitle("PRINTERI I ETIKETAVE"),
+            LinearLayout.LayoutParams(0, -2, 1f))
+        labelHeading.addView(TextView(this).apply {
+            text = "40 × 30 mm"
+            textSize = 10f
             setTextColor(muted)
         })
+        labelCard.addView(labelHeading)
+        val labelControls = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
         labelSpinner = Spinner(this)
-        root.addView(labelSpinner, LinearLayout.LayoutParams(-1, dp(44)))
+        labelControls.addView(labelSpinner, LinearLayout.LayoutParams(0, dp(43), 2.2f))
         protocolSpinner = Spinner(this)
         val protocolAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, listOf("TSPL", "TSPL2"))
         protocolAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         protocolSpinner.adapter = protocolAdapter
         protocolSpinner.setSelection(if (prefs.getString("label_protocol", "tspl2") == "tspl") 0 else 1)
-        root.addView(protocolSpinner, LinearLayout.LayoutParams(-1, dp(40)))
-
-        root.addView(TextView(this).apply {
-            text = "FATURA"; textSize = 11f; typeface = android.graphics.Typeface.DEFAULT_BOLD
-            setTextColor(muted); setPadding(0, dp(4), 0, 0)
+        labelControls.addView(protocolSpinner, LinearLayout.LayoutParams(0, dp(43), 1f).apply {
+            marginStart = dp(5)
         })
+        labelCard.addView(labelControls)
+        root.addView(labelCard, spacedParams(bottom = 8))
+
+        val receiptCard = card()
+        receiptCard.addView(sectionTitle("PRINTERI I FATURAVE"))
         receiptSpinner = Spinner(this)
-        root.addView(receiptSpinner, LinearLayout.LayoutParams(-1, dp(44)))
+        receiptCard.addView(receiptSpinner, LinearLayout.LayoutParams(-1, dp(43)))
+        root.addView(receiptCard, spacedParams(bottom = 9))
 
         val actionRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
         actionRow.addView(actionButton("↻ Rifresko", false) { refreshDevices() },
-            LinearLayout.LayoutParams(0, dp(44), 1f).apply { marginEnd = dp(4) })
-        actionRow.addView(actionButton("Ruaj", false) {
+            LinearLayout.LayoutParams(0, dp(43), 1f).apply { marginEnd = dp(5) })
+        actionRow.addView(actionButton("Ruaj konfigurimin", false) {
             saveSelections()
             prefs.edit().putString("label_protocol", selectedProtocol()).apply()
             showStatus("Konfigurimi u ruajt.")
-        }, LinearLayout.LayoutParams(0, dp(44), 1f).apply { marginStart = dp(4) })
-        root.addView(actionRow, spacedParams(bottom = 8, top = 0))
+        }, LinearLayout.LayoutParams(0, dp(43), 1f).apply { marginStart = dp(5) })
+        root.addView(actionRow, spacedParams(bottom = 8))
 
         val testRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        testRow.addView(actionButton("Testo etiketën 40×30", true) { testLabel() },
-            LinearLayout.LayoutParams(0, dp(54), 1f).apply { marginEnd = dp(4) })
+        testRow.addView(actionButton("Testo etiketën", true) { testLabel() },
+            LinearLayout.LayoutParams(0, dp(49), 1f).apply { marginEnd = dp(5) })
         testRow.addView(actionButton("Testo faturën", false) { testReceipt() },
-            LinearLayout.LayoutParams(0, dp(54), 1f).apply { marginStart = dp(4) })
-        root.addView(testRow, spacedParams(bottom = 8))
+            LinearLayout.LayoutParams(0, dp(49), 1f).apply { marginStart = dp(5) })
+        root.addView(testRow, spacedParams(bottom = 3))
 
-        val footer = TextView(this).apply {
-            text = "Printimet nga Unionline · Bridge në pritje"
-            textSize = 11f; setTextColor(muted); gravity = Gravity.CENTER
-            setPadding(0, dp(4), 0, dp(2))
-        }
-        root.addView(footer)
+        root.addView(TextView(this).apply {
+            text = "Unionline · Print Bridge"
+            textSize = 10f
+            setTextColor(muted)
+            gravity = Gravity.CENTER
+            setPadding(0, dp(3), 0, 0)
+        })
         setContentView(root)
     }
 
