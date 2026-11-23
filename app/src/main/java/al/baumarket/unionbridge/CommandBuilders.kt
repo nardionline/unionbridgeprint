@@ -55,9 +55,10 @@ object CommandBuilders {
         }
         if (sku.isNotBlank()) b.append("TEXT 16,104,\"2\",0,1,1,\"$sku\"\r\n")
         if (barcode.isNotBlank()) {
-            b.append("BARCODE 20,130,\"128\",34,0,0,2,3,\"$barcode\"\r\n")
-            val barcodeTextX = ((320 - barcode.length * 8) / 2).coerceAtLeast(8)
-            b.append("TEXT $barcodeTextX,171,\"1\",0,1,1,\"$barcode\"\r\n")
+            // TSPL2 only: slightly taller barcode and larger centered human-readable digits.
+            b.append("BARCODE 20,130,\"128\",42,0,0,2,3,\"$barcode\"\r\n")
+            val barcodeTextX = ((320 - barcode.length * 12) / 2).coerceAtLeast(8)
+            b.append("TEXT $barcodeTextX,178,\"2\",0,1,1,\"$barcode\"\r\n")
         }
         b.append("PRINT ${copies.coerceIn(1,100)},1\r\n")
         return b.toString().toByteArray(Charsets.US_ASCII)

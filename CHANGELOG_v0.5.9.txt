@@ -1,0 +1,4 @@
+Unionline Bridge Android v0.5.9
+- TSPL2 only: increased barcode height from 34 to 42 dots.
+- Increased human-readable barcode digits from font 1 to font 2 and recentered them.
+- TSPL WinDev / MHT-P29L, Bluetooth, ESC/POS, and all other label layout fields unchanged.
